@@ -1,81 +1,85 @@
 import { Router } from 'express';
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { eq } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { shippingConfig } from '../schema/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const router = Router();
 
-// ── JSON helpers ─────────────────────────────────────────────────────────────
+// ── JSON helpers (fallback) ──────────────────────────────────────────────────
 
 function getConfigPath(): string {
   return resolve(__dirname, '..', '..', '..', 'config', 'shipping-config.json');
 }
 
-function readConfig(): any {
+function readJsonConfig(): any {
   const path = getConfigPath();
   if (!existsSync(path)) return { categories: [], defaultExtraUnitFactor: 0.5 };
   return JSON.parse(readFileSync(path, 'utf-8'));
 }
 
-function writeConfig(config: any): void {
-  writeFileSync(getConfigPath(), JSON.stringify(config, null, 2));
-}
-
 // ── Neon helpers ─────────────────────────────────────────────────────────────
 
-async function upsertShippingConfigToNeon(config: any): Promise<void> {
+async function readNeonConfig(): Promise<any[] | null> {
   try {
-    for (const cat of config.categories ?? []) {
-      await db.insert(shippingConfig)
-        .values({
-          categoryId: cat.categoryId,
-          categoryName: cat.categoryName,
-          tiers: cat.tiers,
-          extraUnitFactor: cat.extraUnitFactor ?? config.defaultExtraUnitFactor ?? 0.5,
-        })
-        .onConflictDoUpdate({
-          target: shippingConfig.categoryId,
-          set: {
-            categoryName: cat.categoryName,
-            tiers: cat.tiers,
-            extraUnitFactor: cat.extraUnitFactor ?? config.defaultExtraUnitFactor ?? 0.5,
-          },
-        });
-    }
+    return await db.select().from(shippingConfig);
   } catch (error) {
-    console.error('[Neon] Error upserting shipping config:', error);
+    console.warn('[ShippingConfig] Neon unavailable, falling back to JSON:', (error as Error).message);
+    return null;
   }
+}
+
+function formatNeonConfig(rows: any[]): { categories: any[]; defaultExtraUnitFactor: number } {
+  return {
+    categories: rows.map(r => ({
+      categoryId: r.categoryId,
+      categoryName: r.categoryName,
+      tiers: r.tiers,
+      extraUnitFactor: r.extraUnitFactor,
+    })),
+    defaultExtraUnitFactor: 0.5,
+  };
 }
 
 // ── Routes ───────────────────────────────────────────────────────────────────
 
-// GET /api/shipping-config — Lee de JSON
-router.get('/', (_req, res) => {
-  const config = readConfig();
-  res.json(config);
+// GET /api/shipping-config — Neon-first, JSON-fallback
+router.get('/', async (_req, res) => {
+  const neonRows = await readNeonConfig();
+
+  if (neonRows !== null && neonRows.length > 0) {
+    res.json(formatNeonConfig(neonRows));
+  } else {
+    res.json(readJsonConfig());
+  }
 });
 
-// PUT /api/shipping-config — Actualiza en JSON + Neon
+// PUT /api/shipping-config — Solo Neon
 router.put('/', async (req, res) => {
   const { categories: newCategories, defaultExtraUnitFactor } = req.body;
-  const current = readConfig();
 
-  const updated = {
-    categories: newCategories ?? current.categories,
-    defaultExtraUnitFactor: defaultExtraUnitFactor ?? current.defaultExtraUnitFactor,
-  };
+  try {
+    // Reemplazar toda la configuración en Neon
+    await db.delete(shippingConfig);
 
-  // JSON
-  writeConfig(updated);
+    for (const cat of (newCategories ?? [])) {
+      await db.insert(shippingConfig).values({
+        categoryId: cat.categoryId,
+        categoryName: cat.categoryName,
+        tiers: cat.tiers,
+        extraUnitFactor: cat.extraUnitFactor ?? defaultExtraUnitFactor ?? 0.5,
+      });
+    }
 
-  // Neon
-  await upsertShippingConfigToNeon(updated);
-
-  res.json(updated);
+    // Leer de vuelta para confirmar
+    const saved = await db.select().from(shippingConfig);
+    res.json(formatNeonConfig(saved));
+  } catch (error) {
+    console.error('[ShippingConfig] Error saving config:', error);
+    res.status(500).json({ error: 'Failed to save shipping config' });
+  }
 });
 
 export default router;

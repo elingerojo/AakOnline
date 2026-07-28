@@ -1,15 +1,15 @@
 import { Router } from 'express';
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { products } from '../schema/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const router = Router();
 
-// ── JSON helpers ─────────────────────────────────────────────────────────────
+// ── JSON helpers (solo para fallback) ────────────────────────────────────────
 
 function getDataDir(): string {
   return resolve(__dirname, '..', '..', process.env.DATA_DIR ?? '../src/app/core/data');
@@ -19,172 +19,287 @@ function getProductsPath(): string {
   return resolve(getDataDir(), 'products.json');
 }
 
-function readProducts(): any[] {
+function readJsonProducts(): any[] {
   const path = getProductsPath();
   if (!existsSync(path)) return [];
   return JSON.parse(readFileSync(path, 'utf-8'));
 }
 
-function writeProducts(products: any[]): void {
-  writeFileSync(getProductsPath(), JSON.stringify(products, null, 2));
-}
-
 // ── Neon helpers ─────────────────────────────────────────────────────────────
 
-async function upsertProductToNeon(product: any): Promise<void> {
+/**
+ * Lee todos los productos desde Neon.
+ * Retorna null si Neon no está disponible.
+ */
+async function readNeonProducts(): Promise<any[] | null> {
   try {
-    await db.insert(products)
-      .values({
-        id: product.id,
-        sku: product.sku ?? `SKU-${product.id}`,
-        categoryId: product.categoryId,
-        name: product.name,
-        slug: product.slug ?? `producto-${product.id}`,
-        image: product.image ?? '',
-        imageList: product.imageList ?? [],
-        variantSelections: product.variantSelections ?? null,
-        originalPrice: product.originalPrice ?? 0,
-        currentPrice: product.currentPrice ?? 0,
-        shippingComponents: product.shippingComponents ?? null,
-        taggedSection: product.taggedSection ?? null,
-        featuredImage: product.featuredImage ?? '',
-        featureTag: product.featureTag ?? '',
-        tags: product.tags ?? [],
-        score: product.score ?? 0,
-        ratings: product.ratings ?? 0,
-        shortDescription: product.shortDescription ?? '',
-        longDescription: product.longDescription ?? '',
-        marketingPhrase: product.marketingPhrase ?? '',
-        status: product.status ?? 'pendiente',
-        createdAt: product.createdAt ? new Date(product.createdAt) : new Date(),
-        updatedAt: product.updatedAt ? new Date(product.updatedAt) : new Date(),
-      })
-      .onConflictDoUpdate({
-        target: products.id,
-        set: {
-          sku: product.sku ?? `SKU-${product.id}`,
-          categoryId: product.categoryId,
-          name: product.name,
-          slug: product.slug ?? `producto-${product.id}`,
-          image: product.image ?? '',
-          imageList: product.imageList ?? [],
-          variantSelections: product.variantSelections ?? null,
-          originalPrice: product.originalPrice ?? 0,
-          currentPrice: product.currentPrice ?? 0,
-          shippingComponents: product.shippingComponents ?? null,
-          taggedSection: product.taggedSection ?? null,
-          featuredImage: product.featuredImage ?? '',
-          featureTag: product.featureTag ?? '',
-          tags: product.tags ?? [],
-          score: product.score ?? 0,
-          ratings: product.ratings ?? 0,
-          shortDescription: product.shortDescription ?? '',
-          longDescription: product.longDescription ?? '',
-          marketingPhrase: product.marketingPhrase ?? '',
-          status: product.status ?? 'pendiente',
-          updatedAt: new Date(),
-        },
-      });
+    return await db.select().from(products);
   } catch (error) {
-    console.error('[Neon] Error upserting product:', error);
-    // Don't throw — JSON write already succeeded
+    console.warn('[Products] Neon unavailable, falling back to JSON:', (error as Error).message);
+    return null;
   }
 }
 
-async function deleteProductFromNeon(id: number): Promise<void> {
+/**
+ * Lee un producto por ID desde Neon.
+ */
+async function readNeonProduct(id: number): Promise<any | null> {
   try {
-    await db.delete(products).where(eq(products.id, id));
-  } catch (error) {
-    console.error('[Neon] Error deleting product:', error);
+    const result = await db.select().from(products).where(eq(products.id, id)).limit(1);
+    return result[0] ?? null;
+  } catch {
+    return null;
   }
+}
+
+/**
+ * Obtiene el máximo ID entre Neon y JSON para generar el siguiente.
+ */
+async function getNextId(): Promise<number> {
+  let neonMax = 0;
+  try {
+    const result = await db.select({ maxId: sql<number>`COALESCE(MAX(id), 0)` }).from(products);
+    neonMax = result[0]?.maxId ?? 0;
+  } catch {
+    // Neon no disponible
+  }
+
+  const jsonProducts = readJsonProducts();
+  const jsonMax = jsonProducts.reduce((max, p) => Math.max(max, p.id), 0);
+
+  return Math.max(neonMax, jsonMax) + 1;
+}
+
+/**
+ * Convierte un producto de la base de datos a formato API (snake_case → camelCase).
+ */
+function formatNeonProduct(p: any): any {
+  return {
+    id: p.id,
+    sku: p.sku,
+    categoryId: p.categoryId,
+    name: p.name,
+    slug: p.slug,
+    image: p.image,
+    imageList: p.imageList ?? [],
+    variantSelections: p.variantSelections,
+    originalPrice: p.originalPrice,
+    currentPrice: p.currentPrice,
+    shippingComponents: p.shippingComponents,
+    taggedSection: p.taggedSection,
+    featuredImage: p.featuredImage,
+    featureTag: p.featureTag,
+    tags: p.tags ?? [],
+    score: p.score,
+    ratings: p.ratings,
+    shortDescription: p.shortDescription ?? '',
+    longDescription: p.longDescription ?? '',
+    marketingPhrase: p.marketingPhrase ?? '',
+    status: p.status,
+    createdAt: p.createdAt?.toISOString?.() ?? p.createdAt,
+    updatedAt: p.updatedAt?.toISOString?.() ?? p.updatedAt,
+  };
 }
 
 // ── Routes ───────────────────────────────────────────────────────────────────
 
-// GET /api/products — Lee de JSON (compatible con flujo actual)
-router.get('/', (_req, res) => {
-  const data = readProducts();
-  res.json(data);
+// GET /api/products — Neon-first, JSON-fallback (merge por ID)
+router.get('/', async (_req, res) => {
+  const neonProducts = await readNeonProducts();
+
+  if (neonProducts !== null) {
+    // Merge: Neon overrides JSON by ID
+    const jsonProducts = readJsonProducts();
+    const neonMap = new Map(neonProducts.map(p => [p.id, formatNeonProduct(p)]));
+
+    const merged = jsonProducts.map(jp => neonMap.get(jp.id) ?? jp);
+
+    // Agregar productos que están en Neon pero no en JSON (ej: creados desde admin)
+    for (const [id, np] of neonMap) {
+      if (!jsonProducts.some(jp => jp.id === id)) {
+        merged.push(np);
+      }
+    }
+
+    res.json(merged);
+  } else {
+    // Fallback solo JSON
+    res.json(readJsonProducts());
+  }
 });
 
-// GET /api/products/:id
-router.get('/:id', (req, res) => {
-  const data = readProducts();
-  const product = data.find(p => p.id === parseInt(req.params.id));
-  if (!product) {
-    res.status(404).json({ error: 'Product not found' });
+// GET /api/products/:id — Neon-first, JSON-fallback
+router.get('/:id', async (req, res) => {
+  const id = parseInt(req.params.id);
+
+  // Intentar Neon primero
+  const neonProduct = await readNeonProduct(id);
+  if (neonProduct) {
+    res.json(formatNeonProduct(neonProduct));
     return;
   }
-  res.json(product);
+
+  // Fallback a JSON
+  const jsonProducts = readJsonProducts();
+  const product = jsonProducts.find(p => p.id === id);
+  if (product) {
+    res.json(product);
+    return;
+  }
+
+  res.status(404).json({ error: 'Product not found' });
 });
 
-// POST /api/products — Escribe en JSON + Neon
+// POST /api/products — Solo Neon (fuente de verdad)
 router.post('/', async (req, res) => {
-  const data = readProducts();
-  const maxId = data.reduce((max, p) => Math.max(max, p.id), 0);
-  const now = new Date().toISOString();
+  try {
+    const now = new Date();
+    const id = await getNextId();
 
-  const newProduct = {
-    id: maxId + 1,
-    ...req.body,
-    createdAt: now,
-    updatedAt: now,
-  };
+    const newProduct = {
+      id,
+      sku: req.body.sku ?? `SKU-${id}`,
+      categoryId: req.body.categoryId,
+      name: req.body.name ?? null,
+      slug: req.body.slug ?? `producto-${id}`,
+      image: req.body.image ?? '',
+      imageList: req.body.imageList ?? [],
+      variantSelections: req.body.variantSelections ?? null,
+      originalPrice: req.body.originalPrice ?? 0,
+      currentPrice: req.body.currentPrice ?? 0,
+      shippingComponents: req.body.shippingComponents ?? null,
+      taggedSection: req.body.taggedSection ?? null,
+      featuredImage: req.body.featuredImage ?? '',
+      featureTag: req.body.featureTag ?? '',
+      tags: req.body.tags ?? [],
+      score: req.body.score ?? 0,
+      ratings: req.body.ratings ?? 0,
+      shortDescription: req.body.shortDescription ?? '',
+      longDescription: req.body.longDescription ?? '',
+      marketingPhrase: req.body.marketingPhrase ?? '',
+      status: req.body.status ?? 'pendiente',
+      createdAt: now,
+      updatedAt: now,
+    };
 
-  // Escribir en JSON
-  data.push(newProduct);
-  writeProducts(data);
-
-  // Escribir en Neon (no bloquea la respuesta)
-  await upsertProductToNeon(newProduct);
-
-  res.status(201).json(newProduct);
+    const result = await db.insert(products).values(newProduct).returning();
+    res.status(201).json(formatNeonProduct(result[0]));
+  } catch (error) {
+    console.error('[Products] Error creating product:', error);
+    res.status(500).json({ error: 'Failed to create product' });
+  }
 });
 
-// PUT /api/products/:id — Actualiza en JSON + Neon
+// PUT /api/products/:id — Solo Neon
 router.put('/:id', async (req, res) => {
-  const data = readProducts();
-  const index = data.findIndex(p => p.id === parseInt(req.params.id));
+  const id = parseInt(req.params.id);
 
-  if (index === -1) {
+  try {
+    // Verificar si existe en Neon
+    const existing = await readNeonProduct(id);
+
+    if (existing) {
+      // Actualizar en Neon
+      const updated = await db.update(products)
+        .set({
+          sku: req.body.sku ?? existing.sku,
+          categoryId: req.body.categoryId ?? existing.categoryId,
+          name: req.body.name !== undefined ? req.body.name : existing.name,
+          slug: req.body.slug ?? existing.slug,
+          image: req.body.image ?? existing.image,
+          imageList: req.body.imageList ?? existing.imageList,
+          variantSelections: req.body.variantSelections !== undefined ? req.body.variantSelections : existing.variantSelections,
+          originalPrice: req.body.originalPrice ?? existing.originalPrice,
+          currentPrice: req.body.currentPrice ?? existing.currentPrice,
+          shippingComponents: req.body.shippingComponents !== undefined ? req.body.shippingComponents : existing.shippingComponents,
+          taggedSection: req.body.taggedSection !== undefined ? req.body.taggedSection : existing.taggedSection,
+          featuredImage: req.body.featuredImage ?? existing.featuredImage,
+          featureTag: req.body.featureTag ?? existing.featureTag,
+          tags: req.body.tags ?? existing.tags,
+          score: req.body.score ?? existing.score,
+          ratings: req.body.ratings ?? existing.ratings,
+          shortDescription: req.body.shortDescription ?? existing.shortDescription,
+          longDescription: req.body.longDescription ?? existing.longDescription,
+          marketingPhrase: req.body.marketingPhrase ?? existing.marketingPhrase,
+          status: req.body.status ?? existing.status,
+          updatedAt: new Date(),
+        })
+        .where(eq(products.id, id))
+        .returning();
+
+      res.json(formatNeonProduct(updated[0]));
+      return;
+    }
+
+    // No existe en Neon — verificar si existe en JSON (migración natural)
+    const jsonProducts = readJsonProducts();
+    const jsonProduct = jsonProducts.find(p => p.id === id);
+
+    if (jsonProduct) {
+      // Migrar a Neon (primera vez que se edita)
+      const migrated = {
+        ...jsonProduct,
+        ...req.body,
+        id,
+        updatedAt: new Date(),
+      };
+
+      const result = await db.insert(products).values({
+        id: migrated.id,
+        sku: migrated.sku ?? `SKU-${id}`,
+        categoryId: migrated.categoryId,
+        name: migrated.name,
+        slug: migrated.slug ?? `producto-${id}`,
+        image: migrated.image ?? '',
+        imageList: migrated.imageList ?? [],
+        variantSelections: migrated.variantSelections ?? null,
+        originalPrice: migrated.originalPrice ?? 0,
+        currentPrice: migrated.currentPrice ?? 0,
+        shippingComponents: migrated.shippingComponents ?? null,
+        taggedSection: migrated.taggedSection ?? null,
+        featuredImage: migrated.featuredImage ?? '',
+        featureTag: migrated.featureTag ?? '',
+        tags: migrated.tags ?? [],
+        score: migrated.score ?? 0,
+        ratings: migrated.ratings ?? 0,
+        shortDescription: migrated.shortDescription ?? '',
+        longDescription: migrated.longDescription ?? '',
+        marketingPhrase: migrated.marketingPhrase ?? '',
+        status: migrated.status ?? 'pendiente',
+        createdAt: migrated.createdAt ? new Date(migrated.createdAt) : new Date(),
+        updatedAt: new Date(),
+      }).returning();
+
+      console.log(`[Products] 🚀 Product ${id} migrated from JSON to Neon`);
+      res.json(formatNeonProduct(result[0]));
+      return;
+    }
+
     res.status(404).json({ error: 'Product not found' });
-    return;
+  } catch (error) {
+    console.error('[Products] Error updating product:', error);
+    res.status(500).json({ error: 'Failed to update product' });
   }
-
-  const updated = {
-    ...data[index],
-    ...req.body,
-    id: data[index].id,
-    updatedAt: new Date().toISOString(),
-  };
-
-  // Escribir en JSON
-  data[index] = updated;
-  writeProducts(data);
-
-  // Escribir en Neon
-  await upsertProductToNeon(updated);
-
-  res.json(updated);
 });
 
-// DELETE /api/products/:id — Elimina de JSON + Neon
+// DELETE /api/products/:id — Solo Neon
 router.delete('/:id', async (req, res) => {
-  const data = readProducts();
-  const filtered = data.filter(p => p.id !== parseInt(req.params.id));
+  const id = parseInt(req.params.id);
 
-  if (filtered.length === data.length) {
-    res.status(404).json({ error: 'Product not found' });
-    return;
+  try {
+    const result = await db.delete(products).where(eq(products.id, id)).returning({ id: products.id });
+
+    if (result.length === 0) {
+      // No existe en Neon — podría estar solo en JSON
+      // Como no escribimos en JSON, consideramos éxito si no existe
+      console.log(`[Products] Product ${id} not in Neon (may still be in JSON), returning success`);
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('[Products] Error deleting product:', error);
+    res.status(500).json({ error: 'Failed to delete product' });
   }
-
-  // Eliminar de JSON
-  writeProducts(filtered);
-
-  // Eliminar de Neon
-  await deleteProductFromNeon(parseInt(req.params.id));
-
-  res.json({ success: true });
 });
 
 export default router;
