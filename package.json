@@ -1,0 +1,22 @@
+{
+  "name": "aak-artesanias-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Aak Artesanías — Monorepo: frontend (Angular/Vercel) + backend (Express/Railway)",
+  "scripts": {
+    "dev:backend": "npm run dev -w backend",
+    "dev:frontend": "npm run start -w frontend",
+    "build:backend": "npm run build -w backend",
+    "build:frontend": "npm run build -w frontend",
+    "db:generate": "npm run db:generate -w backend",
+    "db:migrate": "npm run db:migrate -w backend",
+    "seed": "npm run db:seed -w backend",
+    "build": "npm run build:backend && npm run build:frontend",
+    "install:all": "npm install"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "packageManager": "npm@11.12.1"
+}
