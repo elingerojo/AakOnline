@@ -1,0 +1,48 @@
+{
+  "name": "aak-artesanias",
+  "version": "0.1.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "prebuild": "node utilities/prebuild.mjs",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "i18n:extract": "ng extract-i18n --output-path src/locale"
+  },
+  "private": true,
+  "packageManager": "npm@11.12.1",
+  "dependencies": {
+    "@angular/common": "^22.0.0",
+    "@angular/compiler": "^22.0.0",
+    "@angular/core": "^22.0.0",
+    "@angular/forms": "^22.0.0",
+    "@angular/localize": "^22.0.8",
+    "@angular/platform-browser": "^22.0.0",
+    "@angular/router": "^22.0.0",
+    "@ng-icons/core": "^34.0.0",
+    "@ng-icons/feather-icons": "^34.0.0",
+    "@ng-icons/heroicons": "^34.0.0",
+    "@ng-icons/material-icons": "^34.0.0",
+    "aos": "^2.3.4",
+    "@tailwindcss/postcss": "^4.3.3",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
+    "lightgallery": "^2.9.0",
+    "marked": "^18.0.7",
+    "postcss": "^8.5.23",
+    "rxjs": "~7.8.0",
+    "tailwindcss": "^4.3.3",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^22.0.7",
+    "@angular/cli": "^22.0.7",
+    "@angular/compiler-cli": "^22.0.0",
+    "@types/aos": "^3.0.7",
+    "jsdom": "^28.0.0",
+    "prettier": "^3.8.1",
+    "typescript": "~6.0.2",
+    "vitest": "^4.1.5"
+  }
+}

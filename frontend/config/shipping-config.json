@@ -1,0 +1,115 @@
+{
+  "categories": [
+    {
+      "categoryId": 1,
+      "categoryName": "Salas",
+      "tiers": [
+        { "minKm": 0, "maxKm": 50, "price": 500 },
+        { "minKm": 51, "maxKm": 100, "price": 800 },
+        { "minKm": 101, "maxKm": 200, "price": 1200 },
+        { "minKm": 201, "maxKm": 500, "price": 2000 }
+      ],
+      "extraUnitFactor": 0.5
+    },
+    {
+      "categoryId": 2,
+      "categoryName": "Comedores",
+      "tiers": [
+        { "minKm": 0, "maxKm": 50, "price": 600 },
+        { "minKm": 51, "maxKm": 100, "price": 900 },
+        { "minKm": 101, "maxKm": 200, "price": 1400 },
+        { "minKm": 201, "maxKm": 500, "price": 2500 }
+      ],
+      "extraUnitFactor": 0.5
+    },
+    {
+      "categoryId": 3,
+      "categoryName": "Recibidores",
+      "tiers": [
+        { "minKm": 0, "maxKm": 50, "price": 400 },
+        { "minKm": 51, "maxKm": 100, "price": 700 },
+        { "minKm": 101, "maxKm": 200, "price": 1100 },
+        { "minKm": 201, "maxKm": 500, "price": 1800 }
+      ],
+      "extraUnitFactor": 0.5
+    },
+    {
+      "categoryId": 4,
+      "categoryName": "Sillones",
+      "tiers": [
+        { "minKm": 0, "maxKm": 50, "price": 350 },
+        { "minKm": 51, "maxKm": 100, "price": 600 },
+        { "minKm": 101, "maxKm": 200, "price": 900 },
+        { "minKm": 201, "maxKm": 500, "price": 1500 }
+      ],
+      "extraUnitFactor": 0.5
+    },
+    {
+      "categoryId": 5,
+      "categoryName": "Mecedoras",
+      "tiers": [
+        { "minKm": 0, "maxKm": 50, "price": 300 },
+        { "minKm": 51, "maxKm": 100, "price": 500 },
+        { "minKm": 101, "maxKm": 200, "price": 800 },
+        { "minKm": 201, "maxKm": 500, "price": 1200 }
+      ],
+      "extraUnitFactor": 0.5
+    },
+    {
+      "categoryId": 6,
+      "categoryName": "Sillas",
+      "tiers": [
+        { "minKm": 0, "maxKm": 50, "price": 250 },
+        { "minKm": 51, "maxKm": 100, "price": 450 },
+        { "minKm": 101, "maxKm": 200, "price": 750 },
+        { "minKm": 201, "maxKm": 500, "price": 1100 }
+      ],
+      "extraUnitFactor": 0.5
+    },
+    {
+      "categoryId": 7,
+      "categoryName": "Columpios",
+      "tiers": [
+        { "minKm": 0, "maxKm": 50, "price": 400 },
+        { "minKm": 51, "maxKm": 100, "price": 700 },
+        { "minKm": 101, "maxKm": 200, "price": 1100 },
+        { "minKm": 201, "maxKm": 500, "price": 1800 }
+      ],
+      "extraUnitFactor": 0.5
+    },
+    {
+      "categoryId": 8,
+      "categoryName": "Pantallas",
+      "tiers": [
+        { "minKm": 0, "maxKm": 50, "price": 200 },
+        { "minKm": 51, "maxKm": 100, "price": 350 },
+        { "minKm": 101, "maxKm": 200, "price": 600 },
+        { "minKm": 201, "maxKm": 500, "price": 1000 }
+      ],
+      "extraUnitFactor": 0.5
+    },
+    {
+      "categoryId": 9,
+      "categoryName": "Marcos",
+      "tiers": [
+        { "minKm": 0, "maxKm": 50, "price": 200 },
+        { "minKm": 51, "maxKm": 100, "price": 350 },
+        { "minKm": 101, "maxKm": 200, "price": 600 },
+        { "minKm": 201, "maxKm": 500, "price": 1000 }
+      ],
+      "extraUnitFactor": 0.5
+    },
+    {
+      "categoryId": 10,
+      "categoryName": "Accesorios",
+      "tiers": [
+        { "minKm": 0, "maxKm": 50, "price": 150 },
+        { "minKm": 51, "maxKm": 100, "price": 300 },
+        { "minKm": 101, "maxKm": 200, "price": 500 },
+        { "minKm": 201, "maxKm": 500, "price": 800 }
+      ],
+      "extraUnitFactor": 0.5
+    }
+  ],
+  "defaultExtraUnitFactor": 0.5
+}

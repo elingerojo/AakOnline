@@ -1,0 +1,206 @@
+/* ============================================================
+   HeroSliderComponent - Native slider with Signals
+   ============================================================ */
+
+/* ---- Wrapper ---- */
+.hero-slider-wrapper {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+
+/* ---- Slides Track (translateX animation) ---- */
+.hero-slides-track {
+  display: flex;
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+}
+
+.hero-slide {
+  min-width: 100%;
+  flex-shrink: 0;
+}
+
+/* ---- Entrance Animations (inactive state) ---- */
+.hero-slide .slider-img {
+  transform: scale(0.75);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.5s ease-in-out 0.15s;
+}
+
+.hero-slide .shape-01,
+.hero-slide .shape-02 {
+  transform: scale(0.75);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.5s ease-in-out 0.25s;
+}
+
+.hero-slide .slider-content .content-top,
+.hero-slide .slider-content h2,
+.hero-slide .slider-content p,
+.hero-slide .slider-content .button {
+  transform: translateY(50px);
+  opacity: 0;
+  visibility: hidden;
+}
+
+.hero-slide .slider-content .content-top {
+  transition: all 0.3s ease-in-out 0.1s;
+}
+
+.hero-slide .slider-content h2 {
+  transition: all 0.4s ease-in-out 0.2s;
+}
+
+.hero-slide .slider-content p {
+  transition: all 0.5s ease-in-out 0.3s;
+}
+
+.hero-slide .slider-content .button {
+  transition: all 0.5s ease-in-out 0.4s;
+}
+
+/* ---- Active slide animations ---- */
+.hero-slide.active .slider-img {
+  transform: scale(1);
+  opacity: 1;
+  visibility: visible;
+}
+
+.hero-slide.active .shape-01,
+.hero-slide.active .shape-02 {
+  transform: scale(1);
+  opacity: 1;
+  visibility: visible;
+}
+
+.hero-slide.active .slider-content .content-top,
+.hero-slide.active .slider-content h2,
+.hero-slide.active .slider-content p,
+.hero-slide.active .slider-content .button {
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ---- Navigation Arrows ---- */
+.hero-slider-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(23, 36, 48, 0.1);
+  color: #172430;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s ease, background 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.hero-slider-wrapper:hover .hero-slider-arrow {
+  opacity: 1;
+}
+
+.hero-slider-arrow:hover {
+  background: #fff;
+  color: #BB976D;
+}
+
+.hero-slider-arrow--prev {
+  left: 16px;
+}
+
+.hero-slider-arrow--next {
+  right: 16px;
+}
+
+/* ---- Dots Navigation ---- */
+.hero-slider-dots {
+  position: absolute;
+  bottom: 1.5rem;
+  right: 1.75rem;
+  z-index: 20;
+  display: flex;
+  gap: 1.25rem;
+}
+
+@media (min-width: 1280px) {
+  .hero-slider-dots {
+    top: 50%;
+    right: 1.75rem;
+    bottom: auto;
+    flex-direction: column;
+    transform: translateY(-50%);
+  }
+}
+
+.hero-slider-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background-color: #172430;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0.5;
+}
+
+.hero-slider-dot.active {
+  opacity: 1;
+  background-color: #BB976D;
+}
+
+:host-context(.dark) .hero-slider-dot {
+  background-color: #fff;
+}
+
+:host-context(.dark) .hero-slider-dot.active {
+  background-color: #BB976D;
+}
+
+/* ---- Mobile-first adjustments ---- */
+@media (max-width: 639px) {
+  .hero-slider-arrow {
+    width: 36px;
+    height: 36px;
+    opacity: 0.6;
+  }
+
+  .hero-slider-arrow--prev {
+    left: 8px;
+  }
+
+  .hero-slider-arrow--next {
+    right: 8px;
+  }
+
+  .hero-slider-dots {
+    right: 50%;
+    bottom: 1rem;
+    transform: translateX(50%);
+    gap: 0.75rem;
+  }
+
+  .hero-slider-dot {
+    width: 8px;
+    height: 8px;
+  }
+}
+
+/* ---- Tablet ---- */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .hero-slider-dots {
+    bottom: 1.25rem;
+    right: 1.5rem;
+  }
+}

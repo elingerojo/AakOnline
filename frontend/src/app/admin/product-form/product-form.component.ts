@@ -1,0 +1,364 @@
+import { Component, inject, input, output, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { AdminApiService } from '../../core/services/admin-api.service';
+import { ProductService } from '../../core/services/product.service';
+import type { Product, ProductStatus } from '@shared/models/product.model';
+import { generateSlug } from '../../core/utils/text-utils';
+
+@Component({
+  selector: 'app-product-form',
+  standalone: true,
+  imports: [FormsModule],
+  template: `
+    <form (ngSubmit)="onSubmit()" class="space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Basic Info -->
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Nombre del producto
+          </label>
+          <input [(ngModel)]="formState.name" name="name" required
+                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                        bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SKU</label>
+          <input [(ngModel)]="formState.sku" name="sku" required
+                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                        bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categoria ID</label>
+          <input type="number" [(ngModel)]="formState.categoryId" name="categoryId" required
+                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                        bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+        </div>
+
+        <!-- Pricing -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Precio original</label>
+          <input type="number" [(ngModel)]="formState.originalPrice" name="originalPrice"
+                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                        bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Precio actual</label>
+          <input type="number" [(ngModel)]="formState.currentPrice" name="currentPrice" required
+                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                        bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+        </div>
+
+        <!-- Status -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Estado</label>
+          <select [(ngModel)]="formState.status" name="status"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+            <option value="pendiente">Pendiente</option>
+            <option value="activo">Activo</option>
+            <option value="suspendido">Suspendido</option>
+            <option value="almacenado">Almacenado</option>
+          </select>
+        </div>
+
+        <!-- Image Upload -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Imagen del producto
+          </label>
+          <div class="flex flex-col gap-2">
+            <input type="file" (change)="onFileSelected($event)"
+                   accept="image/jpeg,image/png,image/webp"
+                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
+                          file:rounded-lg file:border-0 file:text-sm file:font-medium
+                          file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100
+                          dark:file:bg-gray-700 dark:file:text-gray-300" />
+            @if (isUploading()) {
+              <span class="text-sm text-gray-500">Subiendo imagen...</span>
+            }
+            @if (uploadError()) {
+              <span class="text-sm text-red-500">{{ uploadError() }}</span>
+            }
+          </div>
+          @if (formState.image) {
+            <img [src]="formState.image" alt="Preview"
+                 class="mt-2 w-32 h-32 object-cover rounded-lg border border-gray-300 dark:border-gray-600" />
+          }
+        </div>
+
+        <!-- Image URL (manual fallback) -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            O URL de imagen manual
+          </label>
+          <input [(ngModel)]="formState.image" name="image"
+                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                        bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+        </div>
+
+        <!-- Gemini AI Generator -->
+        <div class="md:col-span-2 border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
+          <div class="flex items-center gap-3">
+            <button type="button"
+                    (click)="generateWithGemini()"
+                    [disabled]="isGenerating() || !formState.image"
+                    class="px-4 py-2 bg-gradient-to-r from-purple-600 to-amber-500
+                           text-white font-medium rounded-lg hover:opacity-90
+                           disabled:opacity-50 disabled:cursor-not-allowed
+                           transition-all cursor-pointer">
+              @if (isGenerating()) {
+                ⏳ Generando...
+              } @else {
+                ✨ Generar con Gemini
+              }
+            </button>
+            @if (isGenerating()) {
+              <span class="text-sm text-gray-500">Analizando imagen con IA...</span>
+            }
+            @if (geminiError()) {
+              <span class="text-sm text-red-500">{{ geminiError() }}</span>
+            }
+          </div>
+        </div>
+
+        <!-- Descriptions -->
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Descripcion corta
+          </label>
+          <textarea [(ngModel)]="formState.shortDescription" name="shortDescription" rows="2"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white"></textarea>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Descripcion larga (Markdown)
+          </label>
+          <textarea [(ngModel)]="formState.longDescription" name="longDescription" rows="4"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                           bg-white dark:bg-gray-700 text-gray-900 dark:text-white"></textarea>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Frase de marketing
+          </label>
+          <input [(ngModel)]="formState.marketingPhrase" name="marketingPhrase"
+                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                        bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <button type="submit"
+                [disabled]="isSaving()"
+                class="px-6 py-2 bg-amber-600 text-white font-medium rounded-lg
+                       hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed
+                       transition-colors cursor-pointer">
+          @if (isSaving()) {
+            Guardando...
+          } @else {
+            {{ editingProduct() ? 'Actualizar' : 'Crear producto' }}
+          }
+        </button>
+
+        @if (editingProduct()) {
+          <button type="button" (click)="cancel.emit()"
+                  class="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900
+                         dark:hover:text-white cursor-pointer">
+            Cancelar
+          </button>
+        }
+
+        @if (saveError()) {
+          <span class="text-sm text-red-500 ml-2">{{ saveError() }}</span>
+        }
+        @if (saveSuccess()) {
+          <span class="text-sm text-green-500 ml-2">✓ Guardado exitosamente</span>
+        }
+      </div>
+    </form>
+  `,
+})
+export class ProductFormComponent {
+  private adminApi = inject(AdminApiService);
+  private productService = inject(ProductService);
+
+  readonly editingProduct = input<Product | null>(null);
+  readonly saved = output<void>();
+  readonly cancel = output<void>();
+
+  protected isSaving = signal(false);
+  protected isGenerating = signal(false);
+  protected isUploading = signal(false);
+  protected saveError = signal('');
+  protected geminiError = signal('');
+  protected uploadError = signal('');
+  protected saveSuccess = signal(false);
+
+  protected formState = {
+    sku: '',
+    categoryId: 1,
+    name: '',
+    image: '',
+    originalPrice: 0,
+    currentPrice: 0,
+    shortDescription: '',
+    longDescription: '',
+    marketingPhrase: '',
+    status: 'pendiente' as ProductStatus,
+  };
+
+  ngOnChanges(): void {
+    const prod = this.editingProduct();
+    if (prod) {
+      this.formState = {
+        sku: prod.sku,
+        categoryId: prod.categoryId,
+        name: prod.name ?? '',
+        image: prod.image,
+        originalPrice: prod.originalPrice,
+        currentPrice: prod.currentPrice,
+        shortDescription: prod.shortDescription,
+        longDescription: prod.longDescription,
+        marketingPhrase: prod.marketingPhrase,
+        status: prod.status,
+      };
+    } else {
+      this.resetForm();
+    }
+    // Clear status messages on product change
+    this.saveError.set('');
+    this.geminiError.set('');
+    this.uploadError.set('');
+    this.saveSuccess.set(false);
+  }
+
+  async onSubmit(): Promise<void> {
+    this.isSaving.set(true);
+    this.saveError.set('');
+    this.saveSuccess.set(false);
+
+    try {
+      const prod = this.editingProduct();
+      const payload = {
+        ...this.formState,
+        name: this.formState.name || null,
+        slug: generateSlug(this.formState.name || `producto-${Date.now()}`),
+      };
+
+      if (prod) {
+        // Update via API
+        await this.adminApi.updateProduct(prod.id, payload);
+        // Also sync local service for immediate UI update
+        this.productService.updateProduct(prod.id, payload);
+      } else {
+        // Create via API
+        const fullPayload = {
+          ...payload,
+          imageList: [],
+          variantSelections: [],
+          shippingComponents: [],
+          taggedSection: null,
+          featuredImage: '',
+          featureTag: '',
+          tags: [],
+          score: 0,
+          ratings: 0,
+        };
+        const created = await this.adminApi.createProduct(fullPayload);
+        // Also add to local service
+        this.productService.addProduct(fullPayload);
+      }
+
+      this.saveSuccess.set(true);
+      setTimeout(() => {
+        this.saved.emit();
+        this.resetForm();
+      }, 800);
+    } catch (err) {
+      this.saveError.set(`Error al guardar: ${err instanceof Error ? err.message : 'Error desconocido'}`);
+    } finally {
+      this.isSaving.set(false);
+    }
+  }
+
+  async onFileSelected(event: Event): Promise<void> {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+
+    this.isUploading.set(true);
+    this.uploadError.set('');
+
+    try {
+      const result = await this.adminApi.uploadImage(file);
+      this.formState.image = result.url;
+    } catch (err) {
+      this.uploadError.set('Error al subir imagen');
+      console.error('Upload failed:', err);
+    } finally {
+      this.isUploading.set(false);
+    }
+  }
+
+  async generateWithGemini(): Promise<void> {
+    if (!this.formState.image) return;
+
+    this.isGenerating.set(true);
+    this.geminiError.set('');
+
+    try {
+      const categoryName = this.getCategoryName(this.formState.categoryId);
+      const result = await this.adminApi.generateContent(
+        [this.formState.image],
+        categoryName
+      );
+
+      this.formState.name = result.suggestedName;
+      this.formState.shortDescription = result.shortDescription;
+      this.formState.longDescription = result.longDescription;
+      this.formState.marketingPhrase = result.marketingPhrase;
+    } catch (err) {
+      this.geminiError.set('Error al generar contenido con IA');
+      console.error('Gemini generation failed:', err);
+    } finally {
+      this.isGenerating.set(false);
+    }
+  }
+
+  private getCategoryName(categoryId: number): string {
+    const names: Record<number, string> = {
+      1: 'Salas',
+      2: 'Comedores',
+      3: 'Recibidores',
+      4: 'Sillones',
+      5: 'Mecedoras',
+      6: 'Sillas',
+      7: 'Columpios',
+      8: 'Pantallas',
+      9: 'Marcos',
+      10: 'Accesorios',
+    };
+    return names[categoryId] ?? 'General';
+  }
+
+  private resetForm(): void {
+    this.formState = {
+      sku: '',
+      categoryId: 1,
+      name: '',
+      image: '',
+      originalPrice: 0,
+      currentPrice: 0,
+      shortDescription: '',
+      longDescription: '',
+      marketingPhrase: '',
+      status: 'pendiente',
+    };
+  }
+}
