@@ -1,6 +1,6 @@
 {
-  "name": "aak-artesanias-monorepo",
-  "version": "1.0.0",
+  "name": "aakonline",
+  "version": "0.1.0",
   "private": true,
   "description": "Aak Artesanías — Monorepo: frontend (Angular/Vercel) + backend (Express/Railway)",
   "scripts": {
