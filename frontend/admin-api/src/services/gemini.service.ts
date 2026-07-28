@@ -20,7 +20,7 @@ export async function generateContent(
 
   try {
     const genAI = new GoogleGenerativeAI(API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.5-flash' });
 
     const prompt = `Eres un experto en descripcion de productos artesanales mexicanos.
 Basado en la siguiente imagen de un mueble artesanal de la categoria "${categoryName}", genera:
