@@ -64,13 +64,13 @@ import { generateSlug } from '../../core/utils/text-utils';
           </select>
         </div>
 
-        <!-- Image Upload -->
+        <!-- Main Image (for Gemini) -->
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Imagen del producto
+            Imagen principal <span class="text-xs text-amber-600">(para Gemini)</span>
           </label>
           <div class="flex flex-col gap-2">
-            <input type="file" (change)="onFileSelected($event)"
+            <input type="file" (change)="onMainFileSelected($event)"
                    accept="image/jpeg,image/png,image/webp"
                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
                           file:rounded-lg file:border-0 file:text-sm file:font-medium
@@ -89,7 +89,7 @@ import { generateSlug } from '../../core/utils/text-utils';
           }
         </div>
 
-        <!-- Image URL (manual fallback) -->
+        <!-- Image URL (manual fallback for main image) -->
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             O URL de imagen manual
@@ -97,6 +97,46 @@ import { generateSlug } from '../../core/utils/text-utils';
           <input [(ngModel)]="formState.image" name="image"
                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+        </div>
+
+        <!-- Gallery Images (imageList) -->
+        <div class="md:col-span-2 border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Imagenes de galeria
+          </label>
+
+          <div class="flex items-center gap-3 mb-3">
+            <input type="file" (change)="onGalleryFileSelected($event)"
+                   accept="image/jpeg,image/png,image/webp"
+                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
+                          file:rounded-lg file:border-0 file:text-sm file:font-medium
+                          file:bg-gray-100 file:text-gray-600 hover:file:bg-gray-200
+                          dark:file:bg-gray-700 dark:file:text-gray-300" />
+            @if (isUploadingGallery()) {
+              <span class="text-sm text-gray-500">Subiendo...</span>
+            }
+          </div>
+
+          @if (formState.imageList.length > 0) {
+            <div class="flex flex-wrap gap-3">
+              @for (img of formState.imageList; track img; let i = $index) {
+                <div class="relative group">
+                  <img [src]="img" alt="Gallery {{i + 1}}"
+                       class="w-20 h-20 object-cover rounded-lg border border-gray-300 dark:border-gray-600" />
+                  <button type="button"
+                          (click)="removeGalleryImage(i)"
+                          class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white
+                                 rounded-full text-xs flex items-center justify-center
+                                 opacity-0 group-hover:opacity-100 transition-opacity
+                                 cursor-pointer hover:bg-red-600">
+                    ✕
+                  </button>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="text-sm text-gray-400">Sin imagenes de galeria adicionales</p>
+          }
         </div>
 
         <!-- Gemini AI Generator -->
@@ -196,6 +236,7 @@ export class ProductFormComponent {
   protected isSaving = signal(false);
   protected isGenerating = signal(false);
   protected isUploading = signal(false);
+  protected isUploadingGallery = signal(false);
   protected saveError = signal('');
   protected geminiError = signal('');
   protected uploadError = signal('');
@@ -206,6 +247,7 @@ export class ProductFormComponent {
     categoryId: 1,
     name: '',
     image: '',
+    imageList: [] as string[],
     originalPrice: 0,
     currentPrice: 0,
     shortDescription: '',
@@ -222,6 +264,7 @@ export class ProductFormComponent {
         categoryId: prod.categoryId,
         name: prod.name ?? '',
         image: prod.image,
+        imageList: prod.imageList ?? [],
         originalPrice: prod.originalPrice,
         currentPrice: prod.currentPrice,
         shortDescription: prod.shortDescription,
@@ -255,13 +298,11 @@ export class ProductFormComponent {
       if (prod) {
         // Update via API
         await this.adminApi.updateProduct(prod.id, payload);
-        // Also sync local service for immediate UI update
         this.productService.updateProduct(prod.id, payload);
       } else {
         // Create via API
         const fullPayload = {
           ...payload,
-          imageList: [],
           variantSelections: [],
           shippingComponents: [],
           taggedSection: null,
@@ -272,7 +313,6 @@ export class ProductFormComponent {
           ratings: 0,
         };
         const created = await this.adminApi.createProduct(fullPayload);
-        // Also add to local service
         this.productService.addProduct(fullPayload);
       }
 
@@ -288,7 +328,9 @@ export class ProductFormComponent {
     }
   }
 
-  async onFileSelected(event: Event): Promise<void> {
+  // ── Main image (for Gemini) ──────────────────────────────────────────────
+
+  async onMainFileSelected(event: Event): Promise<void> {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
 
@@ -306,6 +348,32 @@ export class ProductFormComponent {
     }
   }
 
+  // ── Gallery images (imageList) ──────────────────────────────────────────
+
+  async onGalleryFileSelected(event: Event): Promise<void> {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+
+    this.isUploadingGallery.set(true);
+
+    try {
+      const result = await this.adminApi.uploadImage(file);
+      this.formState.imageList = [...this.formState.imageList, result.url];
+    } catch (err) {
+      console.error('Gallery upload failed:', err);
+    } finally {
+      this.isUploadingGallery.set(false);
+      // Reset file input
+      (event.target as HTMLInputElement).value = '';
+    }
+  }
+
+  removeGalleryImage(index: number): void {
+    this.formState.imageList = this.formState.imageList.filter((_, i) => i !== index);
+  }
+
+  // ── Gemini ──────────────────────────────────────────────────────────────
+
   async generateWithGemini(): Promise<void> {
     if (!this.formState.image) return;
 
@@ -315,7 +383,7 @@ export class ProductFormComponent {
     try {
       const categoryName = this.getCategoryName(this.formState.categoryId);
       const result = await this.adminApi.generateContent(
-        [this.formState.image],
+        [this.formState.image],  // Solo la imagen principal va a Gemini
         categoryName
       );
 
@@ -353,6 +421,7 @@ export class ProductFormComponent {
       categoryId: 1,
       name: '',
       image: '',
+      imageList: [],
       originalPrice: 0,
       currentPrice: 0,
       shortDescription: '',
