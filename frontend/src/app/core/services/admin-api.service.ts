@@ -12,7 +12,7 @@ export interface GeminiResult {
 
 @Injectable({ providedIn: 'root' })
 export class AdminApiService {
-  private baseUrl = 'http://aakonline-production.up.railway.app/api';
+  private baseUrl = 'https://aakonline-production.up.railway.app/api';
 
   // ========== Products ==========
 
