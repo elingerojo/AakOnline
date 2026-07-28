@@ -3,8 +3,8 @@
   "version": 2,
   "framework": "angular",
   "buildCommand": "npm run build",
-  "outputDirectory": "dist/AakArtesanias",
-  "installCommand": "npm ci",
+  "outputDirectory": "dist/AakArtesanias/browser/es",
+  "installCommand": "npm install",
   "devCommand": "ng serve",
   "rewrites": [
     {
