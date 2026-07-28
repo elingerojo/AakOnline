@@ -44,6 +44,3 @@ __screenshots__/
 .env.local
 .env.*.local
 
-# Admin API
-admin-api/node_modules/
-admin-api/.env
