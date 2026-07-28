@@ -42,10 +42,12 @@
     "@types/aos": "^3.0.7",
     "jsdom": "^28.0.0",
     "prettier": "^3.8.1",
-    "typescript": "~6.0.2",
-    "vitest": "^4.1.5"
+    "typescript": "~6.0.2"
   },
   "optionalDependencies": {
     "lightningcss-linux-x64-gnu": "^1.32.0"
+  },
+  "overrides": {
+    "@tailwindcss/oxide": "npm:@tailwindcss/oxide-linux-x64-gnu"
   }
 }
