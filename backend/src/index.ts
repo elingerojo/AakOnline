@@ -36,5 +36,5 @@ app.get('/api/health', (_req, res) => {
 
 app.listen(PORT, () => {
   console.log(`[admin-api] Server running on http://localhost:${PORT}`);
-  console.log(`[admin-api] Data directory: ${process.env.DATA_DIR ?? '../src/app/core/data'}`);
+  console.log(`[admin-api] Data directory: ../frontend/src/app/core/data`);
 });
