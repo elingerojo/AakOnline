@@ -1,8 +1,9 @@
-import { Component, inject, input, output, signal } from '@angular/core';
+import { Component, inject, input, output, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AdminApiService } from '../../core/services/admin-api.service';
 import { ProductService } from '../../core/services/product.service';
 import type { Product, ProductStatus } from '@shared/models/product.model';
+import type { Category } from '@shared/models/category.model';
 import { generateSlug } from '../../core/utils/text-utils';
 
 @Component({
@@ -17,9 +18,30 @@ import { generateSlug } from '../../core/utils/text-utils';
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Nombre del producto
           </label>
+          @if (suggestedNames().length > 0) {
+            <!-- Selector de nombre sugerido por Gemini -->
+            <div class="flex gap-2 items-start">
+              <select (change)="onNameSelected($event)"
+                      class="flex-1 px-3 py-2 border border-purple-300 dark:border-purple-600 rounded-lg
+                             bg-purple-50 dark:bg-purple-900/20 text-gray-900 dark:text-white
+                             font-medium">
+                <option value="">Seleccionar nombre sugerido...</option>
+                @for (name of suggestedNames(); track name) {
+                  <option [value]="name" [selected]="formState.name === name.split(' (')[0]">
+                    {{ name }}
+                  </option>
+                }
+              </select>
+              <button type="button" (click)="suggestedNames.set([])"
+                      class="text-xs text-gray-400 hover:text-gray-600 mt-2 cursor-pointer">
+                Limpiar
+              </button>
+            </div>
+          }
           <input [(ngModel)]="formState.name" name="name" required
                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                        bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                        bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                        {{ suggestedNames().length > 0 ? 'mt-2' : '' }}" />
         </div>
 
         <div>
@@ -30,10 +52,15 @@ import { generateSlug } from '../../core/utils/text-utils';
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categoria ID</label>
-          <input type="number" [(ngModel)]="formState.categoryId" name="categoryId" required
-                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                        bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categoria</label>
+          <select [(ngModel)]="formState.categoryId" name="categoryId" required
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+            <option value="" disabled>Seleccionar categoria...</option>
+            @for (cat of categories(); track cat.id) {
+              <option [value]="cat.id">{{ cat.name }}</option>
+            }
+          </select>
         </div>
 
         <!-- Pricing -->
@@ -158,10 +185,13 @@ import { generateSlug } from '../../core/utils/text-utils';
             @if (isGenerating()) {
               <span class="text-sm text-gray-500">Analizando imagen con IA...</span>
             }
-            @if (geminiError()) {
-              <span class="text-sm text-red-500">{{ geminiError() }}</span>
-            }
           </div>
+          @if (geminiError()) {
+            <div class="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800
+                        rounded-lg text-sm text-red-700 dark:text-red-300">
+              ⚠️ {{ geminiError() }}
+            </div>
+          }
         </div>
 
         <!-- Descriptions -->
@@ -225,7 +255,7 @@ import { generateSlug } from '../../core/utils/text-utils';
     </form>
   `,
 })
-export class ProductFormComponent {
+export class ProductFormComponent implements OnInit {
   private adminApi = inject(AdminApiService);
   private productService = inject(ProductService);
 
@@ -233,6 +263,8 @@ export class ProductFormComponent {
   readonly saved = output<void>();
   readonly cancel = output<void>();
 
+  protected categories = signal<Category[]>([]);
+  protected suggestedNames = signal<string[]>([]);
   protected isSaving = signal(false);
   protected isGenerating = signal(false);
   protected isUploading = signal(false);
@@ -256,30 +288,59 @@ export class ProductFormComponent {
     status: 'pendiente' as ProductStatus,
   };
 
+  ngOnInit(): void {
+    this.loadCategories();
+    this.adminApi.refreshCacheIfNeeded();
+  }
+
+  private async loadCategories(): Promise<void> {
+    try {
+      const cats = await this.adminApi.getCategories();
+      this.categories.set(cats);
+    } catch (err) {
+      console.error('Failed to load categories:', err);
+    }
+  }
+
   ngOnChanges(): void {
     const prod = this.editingProduct();
     if (prod) {
-      this.formState = {
-        sku: prod.sku,
-        categoryId: prod.categoryId,
-        name: prod.name ?? '',
-        image: prod.image,
-        imageList: prod.imageList ?? [],
-        originalPrice: prod.originalPrice,
-        currentPrice: prod.currentPrice,
-        shortDescription: prod.shortDescription,
-        longDescription: prod.longDescription,
-        marketingPhrase: prod.marketingPhrase,
-        status: prod.status,
-      };
+      // Neon-first: intentar obtener datos más recientes de la API
+      this.loadProductFromApi(prod.id);
     } else {
       this.resetForm();
     }
-    // Clear status messages on product change
     this.saveError.set('');
     this.geminiError.set('');
     this.uploadError.set('');
     this.saveSuccess.set(false);
+  }
+
+  private async loadProductFromApi(id: number): Promise<void> {
+    try {
+      const latest = await this.adminApi.getProduct(id);
+      this.applyProductToForm(latest);
+    } catch {
+      // Fallback: usar datos locales
+      const prod = this.editingProduct();
+      if (prod) this.applyProductToForm(prod);
+    }
+  }
+
+  private applyProductToForm(prod: Product): void {
+    this.formState = {
+      sku: prod.sku,
+      categoryId: prod.categoryId,
+      name: prod.name ?? '',
+      image: prod.image,
+      imageList: prod.imageList ?? [],
+      originalPrice: prod.originalPrice,
+      currentPrice: prod.currentPrice,
+      shortDescription: prod.shortDescription,
+      longDescription: prod.longDescription,
+      marketingPhrase: prod.marketingPhrase,
+      status: prod.status,
+    };
   }
 
   async onSubmit(): Promise<void> {
@@ -296,11 +357,9 @@ export class ProductFormComponent {
       };
 
       if (prod) {
-        // Update via API
         await this.adminApi.updateProduct(prod.id, payload);
         this.productService.updateProduct(prod.id, payload);
       } else {
-        // Create via API
         const fullPayload = {
           ...payload,
           variantSelections: [],
@@ -325,6 +384,17 @@ export class ProductFormComponent {
       this.saveError.set(`Error al guardar: ${err instanceof Error ? err.message : 'Error desconocido'}`);
     } finally {
       this.isSaving.set(false);
+    }
+  }
+
+  // ── Name selector ───────────────────────────────────────────────────────
+
+  onNameSelected(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const fullName = select.value;
+    if (fullName) {
+      // Extraer solo el nombre maya (antes del paréntesis)
+      this.formState.name = fullName.split(' (')[0];
     }
   }
 
@@ -363,7 +433,6 @@ export class ProductFormComponent {
       console.error('Gallery upload failed:', err);
     } finally {
       this.isUploadingGallery.set(false);
-      // Reset file input
       (event.target as HTMLInputElement).value = '';
     }
   }
@@ -379,20 +448,24 @@ export class ProductFormComponent {
 
     this.isGenerating.set(true);
     this.geminiError.set('');
+    this.suggestedNames.set([]);
 
     try {
-      const categoryName = this.getCategoryName(this.formState.categoryId);
+      const category = this.categories().find(c => c.id === this.formState.categoryId);
+      const categoryName = category?.name ?? this.getCategoryName(this.formState.categoryId);
+
       const result = await this.adminApi.generateContent(
         [this.formState.image],  // Solo la imagen principal va a Gemini
-        categoryName
+        categoryName,
+        this.formState.categoryId  // ← Nuevo: pasar categoryId
       );
 
-      this.formState.name = result.suggestedName;
+      this.suggestedNames.set(result.suggestedNames);
       this.formState.shortDescription = result.shortDescription;
       this.formState.longDescription = result.longDescription;
       this.formState.marketingPhrase = result.marketingPhrase;
     } catch (err) {
-      this.geminiError.set('Error al generar contenido con IA');
+      this.geminiError.set(err instanceof Error ? err.message : 'Error al generar contenido con IA');
       console.error('Gemini generation failed:', err);
     } finally {
       this.isGenerating.set(false);
@@ -400,19 +473,8 @@ export class ProductFormComponent {
   }
 
   private getCategoryName(categoryId: number): string {
-    const names: Record<number, string> = {
-      1: 'Salas',
-      2: 'Comedores',
-      3: 'Recibidores',
-      4: 'Sillones',
-      5: 'Mecedoras',
-      6: 'Sillas',
-      7: 'Columpios',
-      8: 'Pantallas',
-      9: 'Marcos',
-      10: 'Accesorios',
-    };
-    return names[categoryId] ?? 'General';
+    const found = this.categories().find(c => c.id === categoryId);
+    return found?.name ?? 'General';
   }
 
   private resetForm(): void {
@@ -429,5 +491,6 @@ export class ProductFormComponent {
       marketingPhrase: '',
       status: 'pendiente',
     };
+    this.suggestedNames.set([]);
   }
 }
