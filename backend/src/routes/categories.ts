@@ -12,7 +12,7 @@ const router = Router();
 // ── JSON helpers (fallback) ──────────────────────────────────────────────────
 
 function getCategoriesPath(): string {
-  const dataDir = resolve(__dirname, '..', '..', process.env.DATA_DIR ?? '../src/app/core/data');
+  const dataDir = resolve(__dirname, '..', '..', '../frontend/src/app/core/data');
   return resolve(dataDir, 'categories.json');
 }
 

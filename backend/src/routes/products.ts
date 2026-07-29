@@ -12,7 +12,7 @@ const router = Router();
 // ── JSON helpers (solo para fallback) ────────────────────────────────────────
 
 function getDataDir(): string {
-  return resolve(__dirname, '..', '..', process.env.DATA_DIR ?? '../src/app/core/data');
+  return resolve(__dirname, '..', '..', '../frontend/src/app/core/data');
 }
 
 function getProductsPath(): string {
