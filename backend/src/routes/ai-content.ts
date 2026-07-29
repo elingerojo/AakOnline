@@ -1,39 +1,33 @@
 import { Router } from 'express';
-import { generateContent } from '../services/gemini.service.js';
+import { generateContent, GeminiError } from '../services/gemini.service.js';
 import { ensureBlobUrl } from './images.js';
 
 const router = Router();
 
 // POST /api/ai/generate-content
-// Body: { images: string[], categoryName: string }
-// Si la imagen es local (assets/...), la migra automáticamente a Vercel Blob
-// antes de enviarla a Gemini (migración natural).
+// Body: { images: string[], categoryName: string, categoryId: number }
+// Gemini primero, Blob después (solo si Gemini responde OK)
 router.post('/generate-content', async (req, res) => {
   try {
-    const { images, categoryName } = req.body;
+    const { images, categoryName, categoryId } = req.body;
 
     if (!images || images.length === 0) {
       res.status(400).json({ error: 'At least one image is required' });
       return;
     }
 
-    let imageSource = images[0];
-
-    // Si es ruta local, migrar a Blob primero (migración natural)
-    if (!imageSource.startsWith('data:') && !imageSource.startsWith('base64,')) {
-      const blobUrl = await ensureBlobUrl(imageSource);
-
-      if (blobUrl !== imageSource) {
-        console.log(`[AI] Image migrated to Blob: ${imageSource} → ${blobUrl}`);
-        imageSource = blobUrl;
-      }
+    if (!categoryId) {
+      res.status(400).json({ error: 'categoryId is required' });
+      return;
     }
 
-    // Convertir imagen a base64 para enviar a Gemini
+    let imageSource = images[0];
+
+    // ── 1. Convertir imagen a base64 (sin subir a Blob aún) ────────────────
     let imageBase64: string;
 
     if (imageSource.startsWith('https://')) {
-      // Es URL de Blob — descargar y convertir a base64
+      // URL de Blob — descargar y convertir a base64
       try {
         const response = await fetch(imageSource);
         const arrayBuffer = await response.arrayBuffer();
@@ -45,12 +39,11 @@ router.post('/generate-content', async (req, res) => {
         return;
       }
     } else if (imageSource.startsWith('data:')) {
-      // Ya es data URL, extraer solo el base64
       imageBase64 = imageSource.split(',')[1] ?? imageSource;
     } else if (imageSource.startsWith('base64,')) {
       imageBase64 = imageSource.replace('base64,', '');
     } else {
-      // Ruta local directa — se usará la original (fallback)
+      // Ruta local — leer del filesystem
       const { readFileSync } = await import('fs');
       const { resolve, dirname } = await import('path');
       const { fileURLToPath } = await import('url');
@@ -60,16 +53,43 @@ router.post('/generate-content', async (req, res) => {
       imageBase64 = imageBuffer.toString('base64');
     }
 
-    const content = await generateContent(imageBase64, categoryName ?? 'General');
+    // ── 2. Llamar a Gemini (si falla, no se sube nada a Blob) ─────────────
+    const content = await generateContent(imageBase64, categoryName ?? 'General', categoryId);
 
-    // Incluir la URL de Block en la respuesta para que el frontend la use
+    // ── 3. Solo si Gemini funciona, migrar la imagen a Blob ───────────────
+    let blobImageUrl: string | null = null;
+
+    if (imageSource.startsWith('assets/') || (!imageSource.startsWith('https://') && !imageSource.startsWith('data:'))) {
+      // Es ruta local → migrar a Blob ahora
+      blobImageUrl = await ensureBlobUrl(imageSource);
+      if (blobImageUrl !== imageSource) {
+        console.log(`[AI] Image migrated to Blob after Gemini success: ${imageSource} → ${blobImageUrl}`);
+      } else {
+        blobImageUrl = null; // No se pudo migrar
+      }
+    } else if (imageSource.startsWith('https://')) {
+      blobImageUrl = imageSource; // Ya está en Blob
+    }
+
     res.json({
       ...content,
-      blobImageUrl: imageSource.startsWith('https://') ? imageSource : null,
+      blobImageUrl,
     });
   } catch (error) {
-    console.error('[AI] Error generating content:', error);
-    res.status(500).json({ error: 'Failed to generate content' });
+    if (error instanceof GeminiError) {
+      console.error(`[AI] Gemini error ${error.statusCode}: ${error.message}`);
+      res.status(error.statusCode).json({
+        error: error.message,
+        statusCode: error.statusCode,
+        statusText: error.statusText,
+      });
+    } else {
+      console.error('[AI] Unexpected error:', error);
+      res.status(500).json({
+        error: 'Error inesperado al generar contenido',
+        statusCode: 500,
+      });
+    }
   }
 });
 
