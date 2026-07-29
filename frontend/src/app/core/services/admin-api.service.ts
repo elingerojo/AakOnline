@@ -4,15 +4,17 @@ import type { Category } from '@shared/models/category.model';
 import type { ShippingConfig } from '@shared/models/shipping-config.model';
 
 export interface GeminiResult {
-  suggestedName: string;
+  suggestedNames: string[];
   shortDescription: string;
   longDescription: string;
   marketingPhrase: string;
+  blobImageUrl?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AdminApiService {
   private baseUrl = 'https://aakonline-production.up.railway.app/api';
+  private readonly CACHE_KEY = 'aak-cache-refresh-date';
 
   // ========== Products ==========
 
@@ -75,14 +77,44 @@ export class AdminApiService {
 
   // ========== Gemini AI ==========
 
-  async generateContent(images: string[], categoryName: string): Promise<GeminiResult> {
+  async generateContent(images: string[], categoryName: string, categoryId: number): Promise<GeminiResult> {
     const res = await fetch(`${this.baseUrl}/ai/generate-content`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ images, categoryName }),
+      body: JSON.stringify({ images, categoryName, categoryId }),
     });
-    if (!res.ok) throw new Error(`Failed to generate content: ${res.status}`);
+
+    if (!res.ok) {
+      // Intentar parsear el cuerpo del error (GeminiError del backend)
+      try {
+        const errBody = await res.json();
+        throw new Error(errBody.error ?? `Error del servidor: ${res.status}`);
+      } catch {
+        throw new Error(`Error al generar contenido: ${res.status}`);
+      }
+    }
+
     return res.json();
+  }
+
+  // ========== Cache Refresh ==========
+
+  /**
+   * Refresca el caché de exclusión de Gemini (solo si es un día nuevo).
+   * Se llama al cargar el dashboard de admin (1ra vez del día).
+   */
+  async refreshCacheIfNeeded(): Promise<void> {
+    const today = new Date().toISOString().split('T')[0];
+    const lastRefresh = localStorage.getItem(this.CACHE_KEY);
+
+    if (lastRefresh === today) return; // Ya se refrescó hoy
+
+    try {
+      await fetch(`${this.baseUrl}/cache/refresh`, { method: 'POST' });
+      localStorage.setItem(this.CACHE_KEY, today);
+    } catch (err) {
+      console.warn('[Cache] Refresh failed (non-critical):', err);
+    }
   }
 
   // ========== Shipping Config ==========
