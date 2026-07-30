@@ -192,6 +192,68 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
           }
         </div>
 
+        <!-- Product Highlighting (Featured / New) -->
+        <div class="md:col-span-2 border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
+          <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">🏆 Producto Destacado</h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Tags -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Tags
+              </label>
+              <div class="flex gap-4">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox"
+                         [checked]="isTagged('destacados')"
+                         (change)="toggleTag('destacados')"
+                         class="rounded border-gray-300 text-amber-600 focus:ring-amber-500" />
+                  <span class="text-sm text-gray-700 dark:text-gray-300">Destacados</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox"
+                         [checked]="isTagged('nuevos')"
+                         (change)="toggleTag('nuevos')"
+                         class="rounded border-gray-300 text-amber-600 focus:ring-amber-500" />
+                  <span class="text-sm text-gray-700 dark:text-gray-300">Nuevos</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Featured Image Selector -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Imagen destacada
+              </label>
+              <select [(ngModel)]="formState.featuredImage" name="featuredImage"
+                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                <option value="">Misma que la principal</option>
+                @for (img of availableImages; track img) {
+                  <option [value]="img" [selected]="formState.featuredImage === img">
+                    {{ img.split('/').pop() }}
+                  </option>
+                }
+              </select>
+              @if (formState.featuredImage) {
+                <img [src]="formState.featuredImage" alt="Featured preview"
+                     class="mt-2 w-20 h-20 object-cover rounded-lg border border-gray-300 dark:border-gray-600" />
+              }
+            </div>
+
+            <!-- Feature Tag -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Etiqueta de oferta
+              </label>
+              <input [(ngModel)]="formState.featureTag" name="featureTag"
+                     placeholder="-10%, Envio gratis, etc."
+                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                            bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+            </div>
+          </div>
+        </div>
+
         <!-- Gemini AI Generator -->
         <div class="md:col-span-2 border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
           <div class="flex items-center gap-3">
@@ -321,6 +383,9 @@ export class ProductFormComponent implements OnInit {
     longDescription: '',
     marketingPhrase: '',
     status: 'pendiente' as ProductStatus,
+    taggedSection: null as 'destacados' | 'nuevos' | null,
+    featuredImage: '',
+    featureTag: '',
   };
 
   ngOnInit(): void {
@@ -375,6 +440,9 @@ export class ProductFormComponent implements OnInit {
       longDescription: prod.longDescription,
       marketingPhrase: prod.marketingPhrase,
       status: prod.status,
+      taggedSection: prod.taggedSection ?? null,
+      featuredImage: prod.featuredImage ?? '',
+      featureTag: prod.featureTag ?? '',
     };
   }
 
@@ -419,6 +487,40 @@ export class ProductFormComponent implements OnInit {
       this.saveError.set(`Error al guardar: ${err instanceof Error ? err.message : 'Error desconocido'}`);
     } finally {
       this.isSaving.set(false);
+    }
+  }
+
+  // ── Product highlighting ─────────────────────────────────────────────────
+
+  protected get availableImages(): string[] {
+    return [this.formState.image, ...this.formState.imageList].filter(Boolean);
+  }
+
+  protected isTagged(section: 'destacados' | 'nuevos'): boolean {
+    if (section === 'nuevos') {
+      return this.formState.taggedSection === 'nuevos';
+    }
+    // 'destacados' o ambos
+    return this.formState.taggedSection === 'destacados' || this.formState.taggedSection === 'nuevos';
+  }
+
+  protected toggleTag(section: 'destacados' | 'nuevos'): void {
+    if (this.isTagged(section)) {
+      // Quitar este tag
+      if (section === 'nuevos') {
+        this.formState.taggedSection = this.formState.taggedSection === 'nuevos' ? null : 'destacados';
+      } else {
+        this.formState.taggedSection = this.formState.taggedSection === 'destacados' ? null : 'nuevos';
+      }
+    } else {
+      // Agregar este tag (manteniendo el otro si existe)
+      const current = this.formState.taggedSection;
+      if (!current) {
+        this.formState.taggedSection = section;
+      } else if (current !== section) {
+        // Ya tiene un tag, agregar el otro significa 'nuevos' (el más específico)
+        this.formState.taggedSection = 'nuevos';
+      }
     }
   }
 
@@ -543,6 +645,9 @@ export class ProductFormComponent implements OnInit {
       longDescription: '',
       marketingPhrase: '',
       status: 'pendiente',
+      taggedSection: null,
+      featuredImage: '',
+      featureTag: '',
     };
     this.suggestedNames.set([]);
   }
