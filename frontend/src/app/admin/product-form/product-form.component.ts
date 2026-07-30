@@ -4,7 +4,7 @@ import { AdminApiService } from '../../core/services/admin-api.service';
 import { ProductService } from '../../core/services/product.service';
 import type { Product, ProductStatus } from '@shared/models/product.model';
 import type { Category } from '@shared/models/category.model';
-import { generateSlug } from '../../core/utils/text-utils';
+import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
 
 @Component({
   selector: 'app-product-form',
@@ -65,17 +65,43 @@ import { generateSlug } from '../../core/utils/text-utils';
 
         <!-- Pricing -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Precio original</label>
-          <input type="number" [(ngModel)]="formState.originalPrice" name="originalPrice"
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Precio actual <span class="text-amber-600 font-bold">*</span>
+          </label>
+          <input type="number" [(ngModel)]="formState.currentPrice" name="currentPrice" required
+                 (input)="onCurrentPriceChange()"
                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Precio actual</label>
-          <input type="number" [(ngModel)]="formState.currentPrice" name="currentPrice" required
-                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                        bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Precio original
+            <span class="text-xs text-gray-400 ml-1">(+15% framing)</span>
+          </label>
+          @if (overrideOriginalPrice()) {
+            <div class="flex gap-2 items-center">
+              <input type="number" [(ngModel)]="formState.originalPrice" name="originalPrice"
+                     class="flex-1 px-3 py-2 border border-amber-300 dark:border-amber-600 rounded-lg
+                            bg-amber-50 dark:bg-amber-900/20 text-gray-900 dark:text-white" />
+              <button type="button" (click)="overrideOriginalPrice.set(false)"
+                      class="text-xs text-gray-500 hover:text-gray-700 cursor-pointer whitespace-nowrap">
+                Auto
+              </button>
+            </div>
+          } @else {
+            <div class="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg
+                        border border-gray-200 dark:border-gray-700">
+              <span class="text-gray-900 dark:text-white font-medium">
+                {{ formatCurrency(calculatedOriginalPrice) }}
+              </span>
+              <span class="text-xs text-gray-400">(+15%)</span>
+              <button type="button" (click)="overrideOriginalPrice.set(true)"
+                      class="text-xs text-amber-600 hover:text-amber-700 ml-auto cursor-pointer">
+                Ajustar
+              </button>
+            </div>
+          }
         </div>
 
         <!-- Status -->
@@ -268,6 +294,12 @@ export class ProductFormComponent implements OnInit {
   protected categories = signal<Category[]>([]);
   protected suggestedNames = signal<string[]>([]);
   protected geminiBlockSave = signal(false);
+  protected overrideOriginalPrice = signal(false);
+
+  protected get calculatedOriginalPrice(): number {
+    return Math.round(this.formState.currentPrice * 1.15);
+  }
+  protected readonly formatCurrency = formatCurrency;
   protected isSaving = signal(false);
   protected isGenerating = signal(false);
   protected isUploading = signal(false);
@@ -387,6 +419,14 @@ export class ProductFormComponent implements OnInit {
       this.saveError.set(`Error al guardar: ${err instanceof Error ? err.message : 'Error desconocido'}`);
     } finally {
       this.isSaving.set(false);
+    }
+  }
+
+  // ── Price framing ────────────────────────────────────────────────────────
+
+  onCurrentPriceChange(): void {
+    if (!this.overrideOriginalPrice()) {
+      this.formState.originalPrice = this.calculatedOriginalPrice;
     }
   }
 
