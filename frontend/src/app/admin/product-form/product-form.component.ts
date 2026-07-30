@@ -11,7 +11,7 @@ import { generateSlug } from '../../core/utils/text-utils';
   standalone: true,
   imports: [FormsModule],
   template: `
-    <form (ngSubmit)="onSubmit()" class="space-y-6">
+    <form (ngSubmit)="onSubmit()" (input)="onFormInput()" class="space-y-6">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Basic Info -->
         <div class="md:col-span-2">
@@ -226,12 +226,14 @@ import { generateSlug } from '../../core/utils/text-utils';
       <!-- Actions -->
       <div class="flex items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
         <button type="submit"
-                [disabled]="isSaving()"
+                [disabled]="isSaving() || geminiBlockSave()"
                 class="px-6 py-2 bg-amber-600 text-white font-medium rounded-lg
                        hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed
                        transition-colors cursor-pointer">
           @if (isSaving()) {
             Guardando...
+          } @else if (geminiBlockSave()) {
+            🚫 Edita campos para guardar
           } @else {
             {{ editingProduct() ? 'Actualizar' : 'Crear producto' }}
           }
@@ -265,6 +267,7 @@ export class ProductFormComponent implements OnInit {
 
   protected categories = signal<Category[]>([]);
   protected suggestedNames = signal<string[]>([]);
+  protected geminiBlockSave = signal(false);
   protected isSaving = signal(false);
   protected isGenerating = signal(false);
   protected isUploading = signal(false);
@@ -387,6 +390,14 @@ export class ProductFormComponent implements OnInit {
     }
   }
 
+  // ── Form input (desbloquea guardado tras fallo de Gemini) ─────────────
+
+  onFormInput(): void {
+    if (this.geminiBlockSave()) {
+      this.geminiBlockSave.set(false);
+    }
+  }
+
   // ── Name selector ───────────────────────────────────────────────────────
 
   onNameSelected(event: Event): void {
@@ -461,11 +472,13 @@ export class ProductFormComponent implements OnInit {
       );
 
       this.suggestedNames.set(result.suggestedNames);
+      this.formState.name = result.suggestedNames[0].split(' (')[0];
       this.formState.shortDescription = result.shortDescription;
       this.formState.longDescription = result.longDescription;
       this.formState.marketingPhrase = result.marketingPhrase;
     } catch (err) {
       this.geminiError.set(err instanceof Error ? err.message : 'Error al generar contenido con IA');
+      this.geminiBlockSave.set(true);
       console.error('Gemini generation failed:', err);
     } finally {
       this.isGenerating.set(false);
