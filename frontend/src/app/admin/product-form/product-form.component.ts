@@ -390,6 +390,7 @@ export class ProductFormComponent implements OnInit {
     taggedSection: null as 'destacados' | 'nuevos' | null,
     featuredImage: '',
     featureTag: '',
+    resolvedId: null as number | null,  // id de Neon si el producto está migrado, si no id local
   };
 
   ngOnInit(): void {
@@ -409,8 +410,10 @@ export class ProductFormComponent implements OnInit {
   ngOnChanges(): void {
     const prod = this.editingProduct();
     if (prod) {
-      // Neon-first: intentar obtener datos más recientes de la API
-      this.loadProductFromApi(prod.id);
+      // 1. Mostrar el producto emitido por el dashboard al instante (correcto)
+      this.applyProductToForm(prod);
+      // 2. Buscar por SKU en la API (Neon-first) para refrescar si está migrado
+      this.loadProductFromApiBySku(prod.sku);
     } else {
       this.resetForm();
     }
@@ -420,14 +423,19 @@ export class ProductFormComponent implements OnInit {
     this.saveSuccess.set(false);
   }
 
-  private async loadProductFromApi(id: number): Promise<void> {
+  /**
+   * Busca el producto por SKU (clave estable entre JSON y Neon).
+   * Si existe en Neon, usa su id para guardar (el id local puede diferir del de Neon).
+   */
+  private async loadProductFromApiBySku(sku: string): Promise<void> {
     try {
-      const latest = await this.adminApi.getProduct(id);
+      const latest = await this.adminApi.getProductBySku(sku);
       this.applyProductToForm(latest);
+      this.formState.resolvedId = latest.id;
     } catch {
-      // Fallback: usar datos locales
+      // Fallback: usar id local
       const prod = this.editingProduct();
-      if (prod) this.applyProductToForm(prod);
+      this.formState.resolvedId = prod?.id ?? null;
     }
   }
 
@@ -447,6 +455,7 @@ export class ProductFormComponent implements OnInit {
       taggedSection: prod.taggedSection ?? null,
       featuredImage: prod.featuredImage ?? '',
       featureTag: prod.featureTag ?? '',
+      resolvedId: prod.id,
     };
   }
 
@@ -469,7 +478,9 @@ export class ProductFormComponent implements OnInit {
       }
 
       if (prod) {
-        await this.adminApi.updateProduct(prod.id, payload);
+        // Usar el id resuelto (Neon si el producto está migrado, si no local)
+        const targetId = this.formState.resolvedId ?? prod.id;
+        await this.adminApi.updateProduct(targetId, payload);
         this.productService.updateProduct(prod.id, payload);
       } else {
         const fullPayload = {
@@ -633,6 +644,11 @@ export class ProductFormComponent implements OnInit {
       this.formState.shortDescription = result.shortDescription;
       this.formState.longDescription = result.longDescription;
       this.formState.marketingPhrase = result.marketingPhrase;
+
+      // Si Gemini migró la imagen local a Vercel Blob, usar la URL de Blob
+      if (result.blobImageUrl) {
+        this.formState.image = result.blobImageUrl;
+      }
     } catch (err) {
       this.geminiError.set(err instanceof Error ? err.message : 'Error al generar contenido con IA');
       this.geminiBlockSave.set(true);
@@ -663,6 +679,7 @@ export class ProductFormComponent implements OnInit {
       taggedSection: null,
       featuredImage: '',
       featureTag: '',
+      resolvedId: null,
     };
     this.suggestedNames.set([]);
   }
