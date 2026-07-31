@@ -2,6 +2,7 @@ import { Component, inject, input, output, signal, OnInit } from '@angular/core'
 import { FormsModule } from '@angular/forms';
 import { AdminApiService } from '../../core/services/admin-api.service';
 import { ProductService } from '../../core/services/product.service';
+import { ProductPreviewComponent } from '../product-preview/product-preview.component';
 import type { Product, ProductStatus } from '@shared/models/product.model';
 import type { Category } from '@shared/models/category.model';
 import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
@@ -9,9 +10,31 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, ProductPreviewComponent],
   template: `
-    <form (ngSubmit)="onSubmit()" (input)="onFormInput()" class="space-y-6">
+    <form (ngSubmit)="onSubmit()" (input)="onFormInput($event)" (change)="onFormInput($event)" class="space-y-6">
+      <!-- Top actions: Vista previa + Guardar -->
+      <div class="flex items-center gap-3 pb-4 border-b border-gray-200 dark:border-gray-700">
+        <button type="button" (click)="openPreview()"
+                class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg
+                       hover:bg-blue-700 transition-colors cursor-pointer">
+          👁️ Vista previa
+        </button>
+        <button type="submit"
+                [disabled]="isSaving() || geminiBlockSave()"
+                class="px-6 py-2 bg-amber-600 text-white text-sm font-medium rounded-lg
+                       hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed
+                       transition-colors cursor-pointer">
+          @if (isSaving()) {
+            Guardando...
+          } @else if (geminiBlockSave()) {
+            🚫 Edita campos para guardar
+          } @else {
+            {{ editingProduct() ? 'Actualizar' : 'Crear producto' }}
+          }
+        </button>
+      </div>
+
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Basic Info -->
         <div class="md:col-span-2">
@@ -322,6 +345,11 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
 
       <!-- Actions -->
       <div class="flex items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <button type="button" (click)="openPreview()"
+                class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg
+                       hover:bg-blue-700 transition-colors cursor-pointer">
+          👁️ Vista previa
+        </button>
         <button type="submit"
                 [disabled]="isSaving() || geminiBlockSave()"
                 class="px-6 py-2 bg-amber-600 text-white font-medium rounded-lg
@@ -351,6 +379,20 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
           <span class="text-sm text-green-500 ml-2">✓ Guardado exitosamente</span>
         }
       </div>
+
+      <!-- Vista previa modal (solo presentacional, no escribe en Neon) -->
+      @if (showPreview() && previewProduct(); as preview) {
+        <app-product-preview
+          [product]="preview"
+          [category]="previewCategory()"
+          [geminiFields]="previewGeminiFields()"
+          [saveLabel]="editingProduct() ? 'Actualizar' : 'Crear producto'"
+          [saveDisabled]="isSaving() || geminiBlockSave()"
+          [isSaving]="isSaving()"
+          (close)="closePreview()"
+          (save)="onSaveFromPreview()"
+        />
+      }
     </form>
   `,
 })
@@ -379,6 +421,14 @@ export class ProductFormComponent implements OnInit {
   protected geminiError = signal('');
   protected uploadError = signal('');
   protected saveSuccess = signal(false);
+
+  // Vista previa + resaltado de completitud / Gemini
+  protected showPreview = signal(false);
+  protected previewProduct = signal<Product | null>(null);
+  protected previewCategory = signal<Category | null>(null);
+  protected previewGeminiFields = signal<string[]>([]);
+  protected geminiFilledFields = signal<Set<string>>(new Set());
+  protected dirtyGeminiFields = signal<Set<string>>(new Set());
 
   protected formState = {
     sku: '',
@@ -583,9 +633,21 @@ export class ProductFormComponent implements OnInit {
 
   // ── Form input (desbloquea guardado tras fallo de Gemini) ─────────────
 
-  onFormInput(): void {
+  onFormInput(event?: Event): void {
     if (this.geminiBlockSave()) {
       this.geminiBlockSave.set(false);
+    }
+    // Marcar como "tocado por el admin" (pierde el resaltado azul de Gemini)
+    const target = event?.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null;
+    if (target?.name) {
+      this.markDirty(target.name);
+    }
+  }
+
+  /** Un campo llenado por Gemini pierde su resaltado azul en cuanto el admin lo toca. */
+  private markDirty(field: string): void {
+    if (this.geminiFilledFields().has(field)) {
+      this.dirtyGeminiFields.update(prev => new Set(prev).add(field));
     }
   }
 
@@ -597,6 +659,7 @@ export class ProductFormComponent implements OnInit {
     if (fullName) {
       // Extraer solo el nombre maya (antes del paréntesis)
       this.formState.name = fullName.split(' (')[0];
+      this.markDirty('name');
     }
   }
 
@@ -612,6 +675,7 @@ export class ProductFormComponent implements OnInit {
     try {
       const result = await this.adminApi.uploadImage(file);
       this.formState.image = result.url;
+      this.markDirty('image');
     } catch (err) {
       this.uploadError.set('Error al subir imagen');
       console.error('Upload failed:', err);
@@ -669,9 +733,19 @@ export class ProductFormComponent implements OnInit {
       this.formState.marketingPhrase = result.marketingPhrase;
 
       // Si Gemini migró la imagen local a Vercel Blob, usar la URL de Blob
+      const geminiFields = ['name', 'shortDescription', 'longDescription', 'marketingPhrase'];
       if (result.blobImageUrl) {
         this.formState.image = result.blobImageUrl;
+        geminiFields.push('image');
       }
+
+      // Registrar campos llenados por Gemini (resaltado azul hasta que el admin los toque)
+      this.geminiFilledFields.update(prev => new Set([...prev, ...geminiFields]));
+      this.dirtyGeminiFields.update(prev => {
+        const next = new Set(prev);
+        geminiFields.forEach(f => next.delete(f));
+        return next;
+      });
     } catch (err) {
       this.geminiError.set(err instanceof Error ? err.message : 'Error al generar contenido con IA');
       this.geminiBlockSave.set(true);
@@ -705,5 +779,59 @@ export class ProductFormComponent implements OnInit {
       resolvedId: null,
     };
     this.suggestedNames.set([]);
+  }
+
+  // ── Vista previa ──────────────────────────────────────────────────────────
+
+  openPreview(): void {
+    this.previewProduct.set(this.buildPreviewProduct());
+    this.previewCategory.set(this.categories().find(c => c.id === this.formState.categoryId) ?? null);
+    const gemini = [...this.geminiFilledFields()].filter(f => !this.dirtyGeminiFields().has(f));
+    this.previewGeminiFields.set(gemini);
+    this.showPreview.set(true);
+  }
+
+  closePreview(): void {
+    this.showPreview.set(false);
+  }
+
+  onSaveFromPreview(): void {
+    this.showPreview.set(false);
+    void this.onSubmit();
+  }
+
+  /** Construye un Product sintético a partir del formState (no persistido). */
+  private buildPreviewProduct(): Product {
+    const now = new Date().toISOString();
+    const existing = this.editingProduct();
+    const originalPrice = this.overrideOriginalPrice()
+      ? this.formState.originalPrice
+      : this.calculatedOriginalPrice;
+
+    return {
+      id: existing?.id ?? 0,
+      sku: this.formState.sku || 'SKU-PENDIENTE',
+      categoryId: this.formState.categoryId,
+      name: this.formState.name || '',
+      slug: generateSlug(this.formState.name || `producto-${Date.now()}`),
+      image: this.formState.image,
+      imageList: this.formState.imageList,
+      variantSelections: existing?.variantSelections ?? [],
+      originalPrice,
+      currentPrice: this.formState.currentPrice,
+      shippingComponents: existing?.shippingComponents ?? [],
+      taggedSection: this.formState.taggedSection,
+      featuredImage: this.formState.featuredImage || this.formState.image,
+      featureTag: this.formState.featureTag,
+      tags: existing?.tags ?? [],
+      score: existing?.score ?? 0,
+      ratings: existing?.ratings ?? 0,
+      shortDescription: this.formState.shortDescription,
+      longDescription: this.formState.longDescription,
+      marketingPhrase: this.formState.marketingPhrase,
+      status: this.formState.status,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+    };
   }
 }
