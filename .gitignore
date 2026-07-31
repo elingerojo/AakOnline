@@ -33,3 +33,7 @@ backend/drizzle/meta/
 
 # ── Ai plans ───────────────────────────────────────────────────────────────────
 plans/
+
+# ── Claude Code ────────────────────────────────────────────────────────────────
+# .claude/ (commands, skills, settings) stays local for now — not committed.
+.claude/
