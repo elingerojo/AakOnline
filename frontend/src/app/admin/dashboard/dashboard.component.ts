@@ -10,6 +10,18 @@ import type { Product } from '@shared/models/product.model';
   imports: [CurrencyPipe],
   template: `
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <!-- Migration legend -->
+      <div class="flex items-center gap-4 px-4 py-2 border-b border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+        <span class="flex items-center gap-1.5">
+          <span class="w-3 h-3 rounded-full bg-green-100 dark:bg-green-900/40 border border-green-400 dark:border-green-700 inline-block"></span>
+          Migrado a Neon (imagen en Vercel Blob)
+        </span>
+        <span class="flex items-center gap-1.5">
+          <span class="w-3 h-3 rounded-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 inline-block"></span>
+          Pendiente de migrar (imagen local)
+        </span>
+      </div>
+
       <!-- Status filter tabs -->
       <div class="flex flex-wrap gap-2 p-4 border-b border-gray-200 dark:border-gray-700">
         @for (item of filterList(); track item.key) {
@@ -45,8 +57,19 @@ import type { Product } from '@shared/models/product.model';
           </thead>
           <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
             @for (product of productService.filteredProducts(); track product.id) {
-              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                <td class="px-4 py-3 text-gray-900 dark:text-white font-mono text-xs">{{ product.sku }}</td>
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                  [class.bg-green-50]="isMigrated(product)"
+                  [class.dark:bg-green-900/20]="isMigrated(product)">
+                <td class="px-4 py-3">
+                  <span class="inline-flex items-center gap-1.5">
+                    @if (isMigrated(product)) {
+                      <span class="w-2 h-2 rounded-full bg-green-500" title="Migrado a Neon"></span>
+                    } @else {
+                      <span class="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600" title="Pendiente de migrar"></span>
+                    }
+                    <span class="text-gray-900 dark:text-white font-mono text-xs">{{ product.sku }}</span>
+                  </span>
+                </td>
                 <td class="px-4 py-3">
                   <div class="flex items-center gap-3">
                     <img [src]="product.image" alt="" class="w-10 h-10 rounded object-cover" loading="lazy" />
@@ -119,4 +142,12 @@ export class AdminDashboardComponent {
   }
 
   protected getCategoryName = getCategoryName;
+
+  /**
+   * Un producto está migrado a Neon si su imagen principal es una URL de Vercel Blob
+   * (https://...). Si la imagen es una ruta local (assets/...), aún no está migrado.
+   */
+  protected isMigrated(product: Product): boolean {
+    return product.image?.startsWith('https://') ?? false;
+  }
 }
