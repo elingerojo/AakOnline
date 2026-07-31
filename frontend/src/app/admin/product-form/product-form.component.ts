@@ -234,18 +234,18 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
                              bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                              disabled:opacity-50 disabled:cursor-not-allowed">
-                <option value="">Misma que la principal</option>
-                @for (img of availableImages; track img) {
+                <option value="">Imagen #1 (principal)</option>
+                @for (img of availableImages; track img; let i = $index) {
                   <option [value]="img" [selected]="formState.featuredImage === img">
-                    {{ img.split('/').pop() }}
+                    Imagen #{{ i + 2 }}
                   </option>
                 }
               </select>
               @if (!hasTag()) {
                 <p class="text-xs text-gray-400 mt-1">Selecciona "Destacados" o "Nuevos" para habilitar.</p>
               }
-              @if (formState.featuredImage) {
-                <img [src]="formState.featuredImage" alt="Featured preview"
+              @if (featuredImagePreview()) {
+                <img [src]="featuredImagePreview()" alt="Featured preview"
                      class="mt-2 w-20 h-20 object-cover rounded-lg border border-gray-300 dark:border-gray-600" />
               }
             </div>
@@ -445,6 +445,13 @@ export class ProductFormComponent implements OnInit {
   }
 
   private applyProductToForm(prod: Product): void {
+    // Si la imagen destacada guardada es la misma que la principal,
+    // normalizar a '' para que el select muestre "Misma que la principal"
+    const featuredImage =
+      prod.featuredImage && prod.featuredImage === prod.image
+        ? ''
+        : (prod.featuredImage ?? '');
+
     this.formState = {
       sku: prod.sku,
       categoryId: prod.categoryId,
@@ -458,7 +465,7 @@ export class ProductFormComponent implements OnInit {
       marketingPhrase: prod.marketingPhrase,
       status: prod.status,
       taggedSection: prod.taggedSection ?? null,
-      featuredImage: prod.featuredImage ?? '',
+      featuredImage,
       featureTag: prod.featureTag ?? '',
       resolvedId: prod.id,
     };
@@ -515,7 +522,14 @@ export class ProductFormComponent implements OnInit {
   // ── Product highlighting ─────────────────────────────────────────────────
 
   protected get availableImages(): string[] {
-    return [this.formState.image, ...this.formState.imageList].filter(Boolean);
+    // Solo la galería (imageList): la imagen principal ya está cubierta
+    // por la opción "Imagen #1 (principal)" (evita duplicarla).
+    return this.formState.imageList.filter(Boolean);
+  }
+
+  /** Vista previa de la imagen destacada: la seleccionada, o la principal si es default */
+  protected featuredImagePreview(): string {
+    return this.formState.featuredImage || this.formState.image;
   }
 
   protected hasTag(): boolean {
