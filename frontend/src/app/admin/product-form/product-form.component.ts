@@ -230,8 +230,10 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
                 Imagen destacada
               </label>
               <select [(ngModel)]="formState.featuredImage" name="featuredImage"
+                      [disabled]="!hasTag()"
                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                             disabled:opacity-50 disabled:cursor-not-allowed">
                 <option value="">Misma que la principal</option>
                 @for (img of availableImages; track img) {
                   <option [value]="img" [selected]="formState.featuredImage === img">
@@ -239,6 +241,9 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
                   </option>
                 }
               </select>
+              @if (!hasTag()) {
+                <p class="text-xs text-gray-400 mt-1">Selecciona "Destacados" o "Nuevos" para habilitar.</p>
+              }
               @if (formState.featuredImage) {
                 <img [src]="formState.featuredImage" alt="Featured preview"
                      class="mt-2 w-20 h-20 object-cover rounded-lg border border-gray-300 dark:border-gray-600" />
@@ -511,6 +516,10 @@ export class ProductFormComponent implements OnInit {
 
   protected get availableImages(): string[] {
     return [this.formState.image, ...this.formState.imageList].filter(Boolean);
+  }
+
+  protected hasTag(): boolean {
+    return this.formState.taggedSection !== null;
   }
 
   protected isTagged(section: 'destacados' | 'nuevos'): boolean {
