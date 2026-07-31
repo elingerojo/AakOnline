@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { eq, sql } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { products } from '../schema/index.js';
+import { ensureBlobUrl } from './images.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const router = Router();
@@ -99,6 +100,28 @@ function formatNeonProduct(p: any): any {
     createdAt: p.createdAt?.toISOString?.() ?? p.createdAt,
     updatedAt: p.updatedAt?.toISOString?.() ?? p.updatedAt,
   };
+}
+
+/**
+ * Migra TODAS las imágenes locales (main + imageList) a Vercel Blob.
+ * Si ya son URLs de Blob (https://...), las deja tal cual (idempotente).
+ */
+async function migrateImages(product: any): Promise<any> {
+  // Imagen principal
+  if (product.image && !product.image.startsWith('https://')) {
+    product.image = await ensureBlobUrl(product.image);
+  }
+
+  // Imágenes de galería
+  if (Array.isArray(product.imageList)) {
+    product.imageList = await Promise.all(
+      product.imageList.map(async (img: string) =>
+        img.startsWith('https://') ? img : ensureBlobUrl(img)
+      )
+    );
+  }
+
+  return product;
 }
 
 // ── Routes ───────────────────────────────────────────────────────────────────
@@ -209,6 +232,9 @@ router.post('/', async (req, res) => {
       updatedAt: now,
     };
 
+    // Migrar imágenes locales a Vercel Blob antes de guardar
+    await migrateImages(newProduct);
+
     const result = await db.insert(products).values(newProduct).returning();
     res.status(201).json(formatNeonProduct(result[0]));
   } catch (error) {
@@ -222,6 +248,9 @@ router.put('/:id', async (req, res) => {
   const id = parseInt(req.params.id);
 
   try {
+    // Migrar imágenes locales a Vercel Blob antes de actualizar
+    await migrateImages(req.body);
+
     // Verificar si existe en Neon
     const existing = await readNeonProduct(id);
 
