@@ -30,6 +30,16 @@ export class AdminApiService {
     return res.json();
   }
 
+  /**
+   * Busca un producto por SKU (Neon-first, JSON-fallback).
+   * El SKU es la clave estable entre el JSON local y Neon (los ids pueden diferir).
+   */
+  async getProductBySku(sku: string): Promise<Product> {
+    const res = await fetch(`${this.baseUrl}/products/sku/${encodeURIComponent(sku)}`);
+    if (!res.ok) throw new Error(`Failed to fetch product by SKU ${sku}: ${res.status}`);
+    return res.json();
+  }
+
   async createProduct(data: Partial<Product>): Promise<Product> {
     const res = await fetch(`${this.baseUrl}/products`, {
       method: 'POST',

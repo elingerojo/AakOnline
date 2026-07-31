@@ -128,6 +128,33 @@ router.get('/', async (_req, res) => {
   }
 });
 
+// GET /api/products/sku/:sku — Busca por SKU (Neon-first, JSON-fallback)
+// Usado para localizar productos migrados a Neon (id puede diferir del JSON local)
+router.get('/sku/:sku', async (req, res) => {
+  const sku = req.params.sku;
+
+  // Neon primero
+  try {
+    const neon = await db.select().from(products).where(eq(products.sku, sku)).limit(1);
+    if (neon[0]) {
+      res.json(formatNeonProduct(neon[0]));
+      return;
+    }
+  } catch (error) {
+    console.warn('[Products] Neon unavailable for SKU lookup:', (error as Error).message);
+  }
+
+  // Fallback a JSON local
+  const jsonProducts = readJsonProducts();
+  const product = jsonProducts.find(p => p.sku === sku);
+  if (product) {
+    res.json(product);
+    return;
+  }
+
+  res.status(404).json({ error: 'Product not found' });
+});
+
 // GET /api/products/:id — Neon-first, JSON-fallback
 router.get('/:id', async (req, res) => {
   const id = parseInt(req.params.id);
