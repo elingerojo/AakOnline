@@ -64,6 +64,11 @@ export class ProductService {
 
   // ---- Mutations (for admin use) ----
 
+  /** Reemplaza todo el catálogo (ej: precarga Neon-first desde la API del admin) */
+  setProducts(products: Product[]): void {
+    this.productsState.set(products);
+  }
+
   /** Add a new product */
   addProduct(product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): void {
     const now = new Date().toISOString();

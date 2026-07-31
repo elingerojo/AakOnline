@@ -1,6 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal, type OnInit } from '@angular/core';
 import { AdminDashboardComponent } from '../dashboard/dashboard.component';
 import { ProductFormComponent } from '../product-form/product-form.component';
+import { AdminApiService } from '../../core/services/admin-api.service';
+import { ProductService } from '../../core/services/product.service';
 import type { Product } from '@shared/models/product.model';
 
 @Component({
@@ -52,9 +54,29 @@ import type { Product } from '@shared/models/product.model';
     </div>
   `,
 })
-export class CatalogWorkspaceComponent {
+export class CatalogWorkspaceComponent implements OnInit {
   protected showForm = signal(false);
   protected editingProduct = signal<Product | null>(null);
+
+  private adminApi = inject(AdminApiService);
+  private productService = inject(ProductService);
+
+  ngOnInit(): void {
+    this.loadFromNeon();
+  }
+
+  /**
+   * Pre-carga los productos desde la API (Neon-first, con JSON-fallback en el backend)
+   * para que el dashboard muestre el estado real de migración desde el primer render.
+   */
+  private async loadFromNeon(): Promise<void> {
+    try {
+      const products = await this.adminApi.getProducts();
+      this.productService.setProducts(products);
+    } catch (err) {
+      console.warn('[Catalog] No se pudo precargar desde Neon; se usa el JSON local:', err);
+    }
+  }
 
   closeForm(): void {
     this.showForm.set(false);
