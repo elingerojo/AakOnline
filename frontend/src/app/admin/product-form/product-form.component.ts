@@ -580,8 +580,10 @@ export class ProductFormComponent implements OnInit {
       if (prod) {
         // Usar el id resuelto (Neon si el producto está migrado, si no local)
         const targetId = this.formState.resolvedId ?? prod.id;
-        await this.adminApi.updateProduct(targetId, payload);
-        this.productService.updateProduct(prod.id, payload);
+        const updated = await this.adminApi.updateProduct(targetId, payload);
+        // Persistir la respuesta (URLs de Blob migradas) en el estado local
+        // para que no se re-envíen rutas locales en futuras ediciones.
+        this.productService.updateProduct(prod.id, updated);
       } else {
         const fullPayload = {
           ...payload,
@@ -591,7 +593,7 @@ export class ProductFormComponent implements OnInit {
           ratings: 0,
         };
         const created = await this.adminApi.createProduct(fullPayload);
-        this.productService.addProduct(fullPayload);
+        this.productService.addProduct(created);
       }
 
       this.saveSuccess.set(true);

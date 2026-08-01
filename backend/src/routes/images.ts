@@ -29,15 +29,23 @@ function getAssetsDir(): string {
   return resolve(__dirname, '..', '..', '..', 'frontend', 'src', 'assets');
 }
 
+// Caché de migración: ruta local → URL de Blob (idempotencia; evita re-subidas)
+const blobCache = new Map<string, string>();
+
 /**
  * Detecta si una ruta de imagen es local (comienza con "assets/")
  * y en ese caso la sube a Vercel Blob, devolviendo la URL pública.
  * Si ya es URL de Blob, la devuelve tal cual.
+ * Idempotente: una misma ruta local se sube a Blob UNA sola vez por vida del servidor.
  */
 export async function ensureBlobUrl(imagePath: string): Promise<string> {
   if (!imagePath || imagePath.startsWith('https://')) {
     return imagePath; // Ya es URL externa (Blob, etc.)
   }
+
+  // Idempotencia: si esta ruta local ya se migró, devolver la misma URL de Blob
+  const cached = blobCache.get(imagePath);
+  if (cached) return cached;
 
   // Es una ruta local (ej: "assets/img/products/065.png")
   // Intentamos resolverla en el filesystem
@@ -60,6 +68,7 @@ export async function ensureBlobUrl(imagePath: string): Promise<string> {
     });
 
     console.log(`[Blob] Migrated local image → ${blob.url}`);
+    blobCache.set(imagePath, blob.url); // Guardar para no volver a subir la misma ruta
     return blob.url;
   } catch (error) {
     console.error('[Blob] Error uploading local image:', error);
