@@ -36,8 +36,8 @@ export interface VariantSelectionResult {
                   class="hover:border-amber-300 dark:border-gray-600 dark:hover:border-amber-500"
                 >
                   {{ option.name }}
-                  @if (option.price > 0) {
-                    <span class="ml-1 text-xs opacity-75">+{{ formatCurrency(option.price) }}</span>
+                  @if (option.price !== 0) {
+                    <span class="ml-1 text-xs opacity-75">{{ variantPriceLabel(option.price) }}</span>
                   }
                 </button>
               }
@@ -54,6 +54,12 @@ export class VariantSelectorComponent {
   readonly selections = model<VariantSelectionResult[]>([]);
 
   protected readonly formatCurrency = formatCurrency;
+
+  /** Etiqueta del precio de la variante: "+$X" para extra, "-$X" para descuento, vacío si 0. */
+  variantPriceLabel(price: number): string {
+    if (price === 0) return '';
+    return `${price > 0 ? '+' : '-'}${formatCurrency(Math.abs(price))}`;
+  }
 
   isEnabled(variantId: string, optionIndex: number): boolean {
     const variant = this.enabledIndices().find(v => v.variantId === variantId);

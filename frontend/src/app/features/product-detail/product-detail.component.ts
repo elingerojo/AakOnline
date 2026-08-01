@@ -213,7 +213,7 @@ export class ProductDetailComponent implements OnInit {
     if (!prod || !prod.name || prod.currentPrice <= 0) return;
 
     const variantPrice = this.variantSelections().reduce((sum, v) => sum + v.optionPrice, 0);
-    const unitPrice = prod.currentPrice + variantPrice;
+    const unitPrice = Math.max(0, prod.currentPrice + variantPrice);
     const qty = this.quantity();
 
     this.quoteService.addItem({

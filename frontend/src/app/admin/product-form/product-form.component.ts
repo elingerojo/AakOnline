@@ -108,8 +108,8 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
                              class="rounded border-gray-300 text-amber-600 focus:ring-amber-500" />
                       <span class="text-sm text-gray-700 dark:text-gray-300">
                         {{ opt.name }}
-                        @if (opt.price > 0) {
-                          <span class="text-xs opacity-75">+{{ formatCurrency(opt.price) }}</span>
+                        @if (opt.price !== 0) {
+                          <span class="text-xs opacity-75">{{ variantPriceLabel(opt.price) }}</span>
                         }
                       </span>
                     </label>
@@ -642,6 +642,12 @@ export class ProductFormComponent implements OnInit {
       // Algunas (o ninguna) activas → guardar restricción ([] = ninguna opción)
       this.formState.variantSelections = [...others, { variantId, enabledOptionIndices: sorted }];
     }
+  }
+
+  /** Etiqueta del precio de la variante: "+$X" para extra, "-$X" para descuento, vacío si 0. */
+  protected variantPriceLabel(price: number): string {
+    if (price === 0) return '';
+    return `${price > 0 ? '+' : '-'}${formatCurrency(Math.abs(price))}`;
   }
 
   // ── Product highlighting ─────────────────────────────────────────────────
