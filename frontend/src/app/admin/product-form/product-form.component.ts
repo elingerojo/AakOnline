@@ -4,7 +4,7 @@ import { AdminApiService } from '../../core/services/admin-api.service';
 import { ProductService } from '../../core/services/product.service';
 import { ProductPreviewComponent } from '../product-preview/product-preview.component';
 import type { Product, ProductStatus } from '@shared/models/product.model';
-import type { Category } from '@shared/models/category.model';
+import type { Category, CategoryVariant } from '@shared/models/category.model';
 import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
 
 @Component({
@@ -85,6 +85,40 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
             }
           </select>
         </div>
+
+        <!-- Product Variants (Phase 2) -->
+        @if (selectedCategoryVariants().length > 0) {
+          <div class="md:col-span-2 border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
+            <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">🔧 Variantes del producto</h3>
+            <p class="text-xs text-gray-400 mb-3">
+              Marca qué opciones aplican a este producto. Si todas están marcadas, el producto no restringe opciones.
+            </p>
+            @for (variant of selectedCategoryVariants(); track variant.id) {
+              <div class="mb-3">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ variant.label }}</label>
+                <div class="flex flex-wrap gap-2">
+                  @for (opt of variant.options; track opt.name; let i = $index) {
+                    <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border cursor-pointer transition-colors
+                                  {{ isVariantOptionEnabled(variant.id, i)
+                                     ? 'border-amber-400 bg-amber-50 dark:bg-amber-900/20'
+                                     : 'border-gray-200 dark:border-gray-600' }}">
+                      <input type="checkbox"
+                             [checked]="isVariantOptionEnabled(variant.id, i)"
+                             (change)="toggleVariantOption(variant.id, i, $any($event.target).checked)"
+                             class="rounded border-gray-300 text-amber-600 focus:ring-amber-500" />
+                      <span class="text-sm text-gray-700 dark:text-gray-300">
+                        {{ opt.name }}
+                        @if (opt.price > 0) {
+                          <span class="text-xs opacity-75">+{{ formatCurrency(opt.price) }}</span>
+                        }
+                      </span>
+                    </label>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
 
         <!-- Pricing -->
         <div>
@@ -438,6 +472,7 @@ export class ProductFormComponent implements OnInit {
     name: '',
     image: '',
     imageList: [] as string[],
+    variantSelections: [] as { variantId: string; enabledOptionIndices: number[] }[],
     originalPrice: 0,
     currentPrice: 0,
     shortDescription: '',
@@ -510,6 +545,7 @@ export class ProductFormComponent implements OnInit {
       name: prod.name ?? '',
       image: prod.image,
       imageList: prod.imageList ?? [],
+      variantSelections: prod.variantSelections ?? [],
       originalPrice: prod.originalPrice,
       currentPrice: prod.currentPrice,
       shortDescription: prod.shortDescription,
@@ -549,7 +585,6 @@ export class ProductFormComponent implements OnInit {
       } else {
         const fullPayload = {
           ...payload,
-          variantSelections: [],
           shippingComponents: [],
           tags: [],
           score: 0,
@@ -568,6 +603,44 @@ export class ProductFormComponent implements OnInit {
       this.saveError.set(`Error al guardar: ${err instanceof Error ? err.message : 'Error desconocido'}`);
     } finally {
       this.isSaving.set(false);
+    }
+  }
+
+  // ── Product variants (Phase 2) ──────────────────────────────────────────
+
+  /** Variantes de la categoría seleccionada (definidas en /admin/categories). */
+  protected selectedCategoryVariants(): CategoryVariant[] {
+    const cat = this.categories().find(c => c.id === this.formState.categoryId);
+    return cat?.variants ?? [];
+  }
+
+  /** ¿La opción i de la variante está habilitada para este producto? (default: todas) */
+  protected isVariantOptionEnabled(variantId: string, optionIndex: number): boolean {
+    const selection = this.formState.variantSelections.find(v => v.variantId === variantId);
+    if (!selection) return true; // Sin restricción = todas habilitadas
+    return selection.enabledOptionIndices.includes(optionIndex);
+  }
+
+  /** Activa/desactiva una opción y recalcula variantSelections. */
+  protected toggleVariantOption(variantId: string, optionIndex: number, checked: boolean): void {
+    const current = this.formState.variantSelections.find(v => v.variantId === variantId);
+    const indices = new Set(current ? current.enabledOptionIndices : []);
+
+    if (checked) indices.add(optionIndex);
+    else indices.delete(optionIndex);
+
+    const variant = this.selectedCategoryVariants().find(v => v.id === variantId);
+    const total = variant?.options.length ?? indices.size;
+    const sorted = [...indices].sort((a, b) => a - b);
+
+    const others = this.formState.variantSelections.filter(v => v.variantId !== variantId);
+
+    if (sorted.length >= total) {
+      // Todas las opciones activas → sin restricción (omitir: "todas habilitadas")
+      this.formState.variantSelections = others;
+    } else {
+      // Algunas (o ninguna) activas → guardar restricción ([] = ninguna opción)
+      this.formState.variantSelections = [...others, { variantId, enabledOptionIndices: sorted }];
     }
   }
 
@@ -770,6 +843,7 @@ export class ProductFormComponent implements OnInit {
       name: '',
       image: '',
       imageList: [],
+      variantSelections: [],
       originalPrice: 0,
       currentPrice: 0,
       shortDescription: '',
@@ -819,7 +893,7 @@ export class ProductFormComponent implements OnInit {
       slug: generateSlug(this.formState.name || `producto-${Date.now()}`),
       image: this.formState.image,
       imageList: this.formState.imageList,
-      variantSelections: existing?.variantSelections ?? [],
+      variantSelections: this.formState.variantSelections,
       originalPrice,
       currentPrice: this.formState.currentPrice,
       shippingComponents: existing?.shippingComponents ?? [],
