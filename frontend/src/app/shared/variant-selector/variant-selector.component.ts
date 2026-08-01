@@ -24,6 +24,7 @@ export interface VariantSelectionResult {
             @for (option of variant.options; track option.name; let i = $index) {
               @if (isEnabled(variant.id, i)) {
                 <button
+                  type="button"
                   (click)="selectOption(variant.id, variant.label, option, i)"
                   class="px-4 py-2 text-sm rounded-lg border-2 transition-all duration-200 cursor-pointer"
                   [class.border-amber-500]="isSelected(variant.id, i)"

@@ -19,6 +19,7 @@ import { Component, input } from '@angular/core';
         <div class="flex gap-2 overflow-x-auto pb-2">
           @for (img of images(); track img; let i = $index) {
             <button
+              type="button"
               (click)="selectImage(i)"
               class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors cursor-pointer"
               [class.border-amber-500]="selectedIndex === i"

@@ -380,20 +380,22 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
         }
       </div>
 
-      <!-- Vista previa modal (solo presentacional, no escribe en Neon) -->
-      @if (showPreview() && previewProduct(); as preview) {
-        <app-product-preview
-          [product]="preview"
-          [category]="previewCategory()"
-          [geminiFields]="previewGeminiFields()"
-          [saveLabel]="editingProduct() ? 'Actualizar' : 'Crear producto'"
-          [saveDisabled]="isSaving() || geminiBlockSave()"
-          [isSaving]="isSaving()"
-          (close)="closePreview()"
-          (save)="onSaveFromPreview()"
-        />
-      }
     </form>
+
+    <!-- Vista previa modal (solo presentacional, no escribe en Neon).
+         Fuera del <form> para que ningún botón interno lo envíe. -->
+    @if (showPreview() && previewProduct(); as preview) {
+      <app-product-preview
+        [product]="preview"
+        [category]="previewCategory()"
+        [geminiFields]="previewGeminiFields()"
+        [saveLabel]="editingProduct() ? 'Actualizar' : 'Crear producto'"
+        [saveDisabled]="isSaving() || geminiBlockSave()"
+        [isSaving]="isSaving()"
+        (close)="closePreview()"
+        (save)="onSaveFromPreview()"
+      />
+    }
   `,
 })
 export class ProductFormComponent implements OnInit {
