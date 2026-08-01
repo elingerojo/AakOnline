@@ -85,6 +85,23 @@ export class AdminApiService {
     return res.json();
   }
 
+  async createCategory(data: Partial<Category>): Promise<Category> {
+    const res = await fetch(`${this.baseUrl}/categories`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error(`Failed to create category: ${res.status}`);
+    return res.json();
+  }
+
+  async deleteCategory(id: number): Promise<void> {
+    const res = await fetch(`${this.baseUrl}/categories/${id}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) throw new Error(`Failed to delete category ${id}: ${res.status}`);
+  }
+
   // ========== Gemini AI ==========
 
   async generateContent(images: string[], categoryName: string, categoryId: number): Promise<GeminiResult> {

@@ -1,6 +1,7 @@
 import { Component, inject, signal, type OnInit } from '@angular/core';
 import { AdminDashboardComponent } from '../dashboard/dashboard.component';
 import { ProductFormComponent } from '../product-form/product-form.component';
+import { AdminNavComponent } from '../admin-nav/admin-nav.component';
 import { AdminApiService } from '../../core/services/admin-api.service';
 import { ProductService } from '../../core/services/product.service';
 import type { Product } from '@shared/models/product.model';
@@ -8,7 +9,7 @@ import type { Product } from '@shared/models/product.model';
 @Component({
   selector: 'app-catalog-workspace',
   standalone: true,
-  imports: [AdminDashboardComponent, ProductFormComponent],
+  imports: [AdminDashboardComponent, ProductFormComponent, AdminNavComponent],
   template: `
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
       <!-- Admin Header -->
@@ -18,10 +19,13 @@ import type { Product } from '@shared/models/product.model';
             <h1 class="text-xl font-bold text-gray-900 dark:text-white">Admin - Catalogo</h1>
             <p class="text-sm text-gray-500 dark:text-gray-400">Gestion de productos</p>
           </div>
-          <button (click)="showForm.set(true)"
-                  class="px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors cursor-pointer">
-            + Nuevo producto
-          </button>
+          <div class="flex items-center gap-4">
+            <app-admin-nav />
+            <button (click)="showForm.set(true)"
+                    class="px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors cursor-pointer">
+              + Nuevo producto
+            </button>
+          </div>
         </div>
       </header>
 

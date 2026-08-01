@@ -31,6 +31,10 @@ export const routes: Routes = [
     loadComponent: () => import('./admin/catalog-workspace/catalog-workspace.component').then(m => m.CatalogWorkspaceComponent)
   },
   {
+    path: 'admin/categories',
+    loadComponent: () => import('./admin/categories/categories.component').then(m => m.CategoriesComponent)
+  },
+  {
     path: 'admin/shipping',
     loadComponent: () => import('./admin/shipping-config/shipping-config.component').then(m => m.ShippingConfigComponent)
   },

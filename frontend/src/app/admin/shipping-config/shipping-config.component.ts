@@ -2,19 +2,23 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AdminApiService } from '../../core/services/admin-api.service';
 import { ShippingService } from '../../core/services/shipping.service';
+import { AdminNavComponent } from '../admin-nav/admin-nav.component';
 import { formatCurrency } from '../../core/utils/text-utils';
 import type { ShippingConfig, DistanceTier } from '@shared/models/shipping-config.model';
 
 @Component({
   selector: 'app-shipping-config',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, AdminNavComponent],
   template: `
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
       <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div class="max-w-7xl mx-auto px-4 py-4">
-          <h1 class="text-xl font-bold text-gray-900 dark:text-white">Admin - Configuracion de Envio</h1>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Tarifas por categoria y distancia</p>
+        <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div>
+            <h1 class="text-xl font-bold text-gray-900 dark:text-white">Admin - Configuracion de Envio</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Tarifas por categoria y distancia</p>
+          </div>
+          <app-admin-nav />
         </div>
       </header>
 
