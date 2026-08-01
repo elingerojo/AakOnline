@@ -50,7 +50,7 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
                              font-medium">
                 <option value="">Seleccionar nombre sugerido...</option>
                 @for (name of suggestedNames(); track name) {
-                  <option [value]="name" [selected]="formState.name === name.split(' (')[0]">
+                  <option [value]="name" [selected]="formState.name === name">
                     {{ name }}
                   </option>
                 }
@@ -657,8 +657,8 @@ export class ProductFormComponent implements OnInit {
     const select = event.target as HTMLSelectElement;
     const fullName = select.value;
     if (fullName) {
-      // Extraer solo el nombre maya (antes del paréntesis)
-      this.formState.name = fullName.split(' (')[0];
+      // El nombre ya viene con formato completo (categoría + maya + significado)
+      this.formState.name = fullName;
       this.markDirty('name');
     }
   }
@@ -727,7 +727,8 @@ export class ProductFormComponent implements OnInit {
       );
 
       this.suggestedNames.set(result.suggestedNames);
-      this.formState.name = result.suggestedNames[0].split(' (')[0];
+      // El nombre ya viene con formato completo (categoría + maya + significado)
+      this.formState.name = result.suggestedNames[0];
       this.formState.shortDescription = result.shortDescription;
       this.formState.longDescription = result.longDescription;
       this.formState.marketingPhrase = result.marketingPhrase;
