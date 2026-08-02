@@ -7,12 +7,14 @@
  * 1. Read config/contact.config.json -> verify structure
  * 2. Read config/shipping-config.json -> verify structure
  * 3. Verify data integrity of src/app/core/data/products.json (if exists)
- * 4. Copy latest data from admin-api/data/ if newer
+ * 4. Sync products from Neon (Railway API) -> merge by SKU into products.json
+ * 5. Generate contact.config.ts from JSON
  */
 
-import { readFileSync, existsSync, writeFileSync, statSync, copyFileSync } from 'fs';
+import { readFileSync, existsSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { syncProducts } from './sync-products.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
@@ -33,21 +35,6 @@ function verifyJson(filePath, schema) {
   }
 }
 
-function syncAdminData() {
-  const adminDataPath = join(root, 'admin-api', 'data', 'products.json');
-  const appDataPath = join(root, 'src', 'app', 'core', 'data', 'products.json');
-  
-  if (existsSync(adminDataPath) && existsSync(appDataPath)) {
-    const adminStat = statSync(adminDataPath);
-    const appStat = statSync(appDataPath);
-    
-    if (adminStat.mtime > appStat.mtime) {
-      console.log('[prebuild] Syncing products.json from admin-api/data/');
-      copyFileSync(adminDataPath, appDataPath);
-    }
-  }
-}
-
 console.log('\n=== AakArtesanias Prebuild ===\n');
 
 // Step 1: Verify configuration files
@@ -60,9 +47,9 @@ console.log('\n--- Core Data Files ---');
 verifyJson('src/app/core/data/categories.json');
 verifyJson('src/app/core/data/products.json');
 
-// Step 3: Sync admin data if available
-console.log('\n--- Admin Data Sync ---');
-syncAdminData();
+// Step 3: Sync products from Neon (never fails the build)
+console.log('\n--- Neon Sync ---');
+await syncProducts();
 
 // Step 4: Generate contact.config.ts from JSON
 console.log('\n--- Generating Config Files ---');
