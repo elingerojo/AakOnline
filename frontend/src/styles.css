@@ -52,6 +52,10 @@
   font-display: swap;
 }
 
+html, body {
+  overflow-x: clip;
+}
+
 body {
   font-family: Josefin Sans, sans-serif;
   font-weight: 400;
@@ -182,22 +186,13 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ---- Header / Navigation ---- */
 .header-area.sticky-header {
-  position: fixed;
   z-index: 99999;
-  left: 0;
-  right: 0;
   top: 0;
-  animation: fadeInDown 1s both;
   background-color: #fff;
 }
 
 .dark .header-area.sticky-header {
   background-color: rgb(30 42 53);
-}
-
-@keyframes fadeInDown {
-  from { opacity: 0; transform: translate3d(0, -100%, 0); }
-  to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 
 /* ---- Main Menu ---- */

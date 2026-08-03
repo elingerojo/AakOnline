@@ -12,16 +12,16 @@ import { ThemeSwitcherComponent } from '../theme-switcher/theme-switcher.compone
   standalone: true,
   imports: [RouterLink, RouterLinkActive, ThemeSwitcherComponent],
   template: `
-    <nav class="header-area fixed top-0 left-0 right-0 z-50"
+    <nav class="header-area sticky top-0 z-50 w-full"
          [class.sticky-header]="isScrolled()"
          [class.bg-white]="!isScrolled()"
          [class.dark:bg-gray-900]="!isScrolled()">
       <div class="container-fluid">
-        <div class="flex items-center justify-between gap-x-6 max-w-[1720px] mx-auto relative py-[10px] sm:py-4 lg:py-0">
+        <div class="flex items-center justify-between gap-x-2 sm:gap-x-6 max-w-[1720px] mx-auto relative py-[10px] sm:py-4 lg:py-0">
 
           <!-- Logo -->
-          <a routerLink="/" class="cursor-pointer block" aria-label="Aak Artesanias">
-            <img src="assets/img/Logo_mini_Aak_para-App-02.png" alt="Aak" class="w-[120px] sm:w-[200px]" />
+          <a routerLink="/" class="cursor-pointer block min-w-0" aria-label="Aak Artesanias">
+            <img src="assets/img/Logo_mini_Aak_para-App-02.png" alt="Aak" class="w-[100px] sm:w-[200px]" />
           </a>
 
           <!-- Desktop Nav -->
@@ -40,8 +40,8 @@ import { ThemeSwitcherComponent } from '../theme-switcher/theme-switcher.compone
               </li>
 
               <!-- Productos con sub-menu (solo toggle, sin navegación) -->
-              <li class="relative nav-with-submenu">
-                <a href="javascript:void(0)" (click)="$event.preventDefault()">
+              <li class="relative nav-with-submenu" [class.active]="isSubmenuOpen()">
+                <a href="javascript:void(0)" (click)="$event.preventDefault(); toggleSubmenu()">
                   Productos<span></span>
                 </a>
                 <ul class="sub-menu lg:absolute z-50 lg:top-full lg:left-0 lg:min-w-[220px]
@@ -83,7 +83,7 @@ import { ThemeSwitcherComponent } from '../theme-switcher/theme-switcher.compone
           </div>
 
           <!-- Right Actions -->
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 shrink-0">
             <app-theme-switcher />
 
             <!-- Wishlist -->
@@ -184,6 +184,7 @@ export class NavbarComponent {
   protected readonly wishlistCount = this.wishlistService.count;
   protected readonly isMobileMenuOpen = signal(false);
   protected readonly isScrolled = signal(false);
+  protected readonly isSubmenuOpen = signal(false);
   protected readonly isWishlistOpen = signal(false);
 
   /** Wishlist items with full product data */
@@ -203,10 +204,18 @@ export class NavbarComponent {
 
   toggleMobileMenu(): void {
     this.isMobileMenuOpen.update(v => !v);
+    if (this.isMobileMenuOpen()) this.isSubmenuOpen.set(false);
+  }
+
+  toggleSubmenu(): void {
+    if (window.matchMedia('(max-width: 1024px)').matches) {
+      this.isSubmenuOpen.update(v => !v);
+    }
   }
 
   closeMobileMenu(): void {
     this.isMobileMenuOpen.set(false);
+    this.isSubmenuOpen.set(false);
   }
 
   toggleWishlistPopup(): void {
