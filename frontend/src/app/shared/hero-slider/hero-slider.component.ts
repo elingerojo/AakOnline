@@ -31,7 +31,7 @@ export interface HeroSlide {
         @for (slide of slides; track slide.id; let i = $index) {
           <div class="hero-slide"
                [class.active]="i === currentSlide()">
-            <div class="relative pt-12 md:pt-20 xl:pt-[100px] pb-12 sm:pb-24 px-[15px] sm:px-12 bg-neutral-100 dark:bg-dark-secondary">
+            <div class="relative pt-8 sm:pt-12 xl:pt-16 pb-12 sm:pb-24 px-[15px] sm:px-12 bg-neutral-100 dark:bg-dark-secondary">
               <div class="container">
                 <div class="max-w-[1720px] mx-auto">
                   <div class="flex items-center justify-between gap-8 flex-col sm:flex-row">
@@ -84,7 +84,7 @@ export interface HeroSlide {
 
                       @if (slide.price) {
                         <div class="absolute -top-4 -left-3 z-10 sm:top-1 sm:left-4 md:top-10 lg:top-16 lg:left-1 shape-01">
-                          <svg class="w-[300px] h-[250px]" viewBox="0 0 501 410" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <svg class="w-[180px] h-[150px] sm:w-[300px] sm:h-[250px]" viewBox="0 0 501 410" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M93.5685 350.941C17.9186 286.326 -22.6142 169.412 13.177 95.6561C48.7857 21.5837 161.217 -9.19765 268.179 2.36595C374.958 13.6135 477.265 67.4732 497.265 147.363C516.948 227.436 454.823 333.672 367.72 380.59C280.8 427.824 169.535 415.374 93.5685 350.941Z" fill="#BB976D" opacity="0.1"/>
                           </svg>
                           <div class="absolute top-1/4 left-[10%] xl:left-[20%] z-30">
