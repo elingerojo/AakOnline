@@ -72,14 +72,30 @@ export class CatalogWorkspaceComponent implements OnInit {
   /**
    * Pre-carga los productos desde la API (Neon-first, con JSON-fallback en el backend)
    * para que el dashboard muestre el estado real de migración desde el primer render.
+   * Solo aplica el catálogo remoto si es "plausible" (no vacío ni más pobre que el local),
+   * para evitar que un fallback de datos placeholder degrade lo que ya se muestra.
    */
   private async loadFromNeon(): Promise<void> {
     try {
       const products = await this.adminApi.getProducts();
-      this.productService.setProducts(products);
+      if (this.isPlausibleCatalog(products)) {
+        this.productService.setProducts(products);
+      } else {
+        console.warn('[Catalog] Respuesta remota poco plausible; se conserva el JSON local.');
+      }
     } catch (err) {
       console.warn('[Catalog] No se pudo precargar desde Neon; se usa el JSON local:', err);
     }
+  }
+
+  /** Acepta el catálogo remoto solo si trae al menos tantos productos y tantos con nombre como el local. */
+  private isPlausibleCatalog(remote: Product[]): boolean {
+    if (!Array.isArray(remote) || remote.length === 0) return false;
+    const local = this.productService.products();
+    if (remote.length < local.length) return false;
+    const remoteNamed = remote.filter(p => p.name && p.name.trim()).length;
+    const localNamed = local.filter(p => p.name && p.name.trim()).length;
+    return remoteNamed >= localNamed;
   }
 
   closeForm(): void {
