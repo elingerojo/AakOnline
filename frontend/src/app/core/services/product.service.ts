@@ -49,17 +49,27 @@ export class ProductService {
     return this.productsState().filter(p => p.categoryId === categoryId);
   }
 
-  /** Get products that have a featuredImage assigned (for Featured section) */
+  /** Productos de la sección "Destacados" del Home (requieren featuredImage + featuredSection). */
   readonly featuredProducts = computed(() => {
     const products = this.productsState();
     return products
-      .filter(p => p.featuredImage && p.featuredImage.trim().length > 0)
+      .filter(p =>
+        p.featuredImage &&
+        p.featuredImage.trim().length > 0 &&
+        p.featuredSection === 'destacados'
+      )
       .slice(0, 8); // max 8 products
   });
 
-  /** Get active products tagged as "nuevos" */
+  /** Productos de la sección "Nuevos" del Home (requieren featuredImage + featuredSection). */
   readonly newProducts = computed(() =>
-    this.productsState().filter(p => p.taggedSection === 'nuevos' && p.status === 'activo')
+    this.productsState().filter(
+      p =>
+        p.featuredImage &&
+        p.featuredImage.trim().length > 0 &&
+        p.featuredSection === 'nuevos' &&
+        p.status === 'activo'
+    )
   );
 
   // ---- Mutations (for admin use) ----

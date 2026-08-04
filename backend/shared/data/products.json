@@ -11,10 +11,10 @@
     "originalPrice": 28175,
     "currentPrice": 24500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "assets/img/products/01-salas/001.png",
-    "featureTag": "-10%",
-    "tags": [],
+    "tags": [
+      "-10%"
+    ],
     "score": 4.5,
     "ratings": 5,
     "shortDescription": "",
@@ -22,7 +22,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 2,
@@ -38,9 +39,7 @@
     "originalPrice": 28175,
     "currentPrice": 24500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -49,7 +48,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 3,
@@ -66,9 +66,7 @@
     "originalPrice": 28175,
     "currentPrice": 24500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -77,7 +75,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 4,
@@ -91,9 +90,7 @@
     "originalPrice": 30475,
     "currentPrice": 26500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -102,7 +99,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 5,
@@ -119,9 +117,7 @@
     "originalPrice": 28175,
     "currentPrice": 24500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -130,7 +126,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 6,
@@ -144,9 +141,7 @@
     "originalPrice": 28175,
     "currentPrice": 24500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -155,7 +150,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 7,
@@ -169,9 +165,7 @@
     "originalPrice": 30475,
     "currentPrice": 26500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -180,7 +174,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 8,
@@ -194,9 +189,7 @@
     "originalPrice": 30475,
     "currentPrice": 26500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -205,7 +198,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 9,
@@ -219,9 +213,7 @@
     "originalPrice": 30475,
     "currentPrice": 26500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -230,7 +222,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 10,
@@ -246,9 +239,7 @@
     "originalPrice": 33925,
     "currentPrice": 29500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -257,7 +248,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 11,
@@ -271,10 +263,10 @@
     "originalPrice": 30475,
     "currentPrice": 26500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "assets/img/products/01-salas/011.png",
-    "featureTag": "-15%",
-    "tags": [],
+    "tags": [
+      "-15%"
+    ],
     "score": 4.6,
     "ratings": 6,
     "shortDescription": "",
@@ -282,7 +274,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 12,
@@ -296,9 +289,7 @@
     "originalPrice": 30475,
     "currentPrice": 26500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -307,7 +298,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 13,
@@ -321,9 +313,7 @@
     "originalPrice": 39675,
     "currentPrice": 34500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -332,7 +322,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 14,
@@ -346,9 +337,7 @@
     "originalPrice": 39675,
     "currentPrice": 34500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -357,7 +346,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 15,
@@ -371,9 +361,7 @@
     "originalPrice": 54625,
     "currentPrice": 47500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -382,7 +370,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 16,
@@ -396,9 +385,7 @@
     "originalPrice": 39675,
     "currentPrice": 34500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -407,7 +394,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 17,
@@ -421,9 +409,7 @@
     "originalPrice": 39675,
     "currentPrice": 34500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -432,7 +418,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 18,
@@ -446,9 +433,7 @@
     "originalPrice": 29900,
     "currentPrice": 26000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -457,7 +442,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 19,
@@ -473,9 +459,7 @@
     "originalPrice": 29900,
     "currentPrice": 26000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -484,7 +468,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 20,
@@ -498,9 +483,7 @@
     "originalPrice": 29900,
     "currentPrice": 26000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -509,7 +492,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 21,
@@ -523,9 +507,7 @@
     "originalPrice": 29900,
     "currentPrice": 26000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "assets/img/products/02-comedores/033.png",
-    "featureTag": "",
     "tags": [],
     "score": 4.7,
     "ratings": 7,
@@ -534,7 +516,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 22,
@@ -551,9 +534,7 @@
     "originalPrice": 14950,
     "currentPrice": 13000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -562,7 +543,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 23,
@@ -576,9 +558,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -587,7 +567,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 24,
@@ -601,9 +582,7 @@
     "originalPrice": 14950,
     "currentPrice": 13000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -612,7 +591,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 25,
@@ -626,9 +606,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -637,7 +615,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 26,
@@ -653,9 +632,7 @@
     "originalPrice": 17250,
     "currentPrice": 15000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -664,7 +641,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 27,
@@ -680,9 +658,7 @@
     "originalPrice": 14950,
     "currentPrice": 13000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -691,7 +667,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 28,
@@ -705,9 +682,7 @@
     "originalPrice": 10925,
     "currentPrice": 9500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -716,7 +691,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 29,
@@ -730,9 +706,7 @@
     "originalPrice": 10925,
     "currentPrice": 9500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -741,7 +715,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 30,
@@ -755,9 +730,7 @@
     "originalPrice": 10925,
     "currentPrice": 9500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -766,7 +739,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 31,
@@ -789,9 +763,7 @@
     "originalPrice": 15525,
     "currentPrice": 13500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "assets/img/products/04-sillones/054.png",
-    "featureTag": "",
     "tags": [
       "nuevo"
     ],
@@ -802,7 +774,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 32,
@@ -816,9 +789,7 @@
     "originalPrice": 5750,
     "currentPrice": 5000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -827,7 +798,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 33,
@@ -841,9 +813,7 @@
     "originalPrice": 5750,
     "currentPrice": 5000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -852,7 +822,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 34,
@@ -866,9 +837,7 @@
     "originalPrice": 5750,
     "currentPrice": 5000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -877,7 +846,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 35,
@@ -893,9 +863,7 @@
     "originalPrice": 5175,
     "currentPrice": 4500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -904,7 +872,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 36,
@@ -918,9 +887,7 @@
     "originalPrice": 6900,
     "currentPrice": 6000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -929,7 +896,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 37,
@@ -943,9 +911,7 @@
     "originalPrice": 6900,
     "currentPrice": 6000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -954,7 +920,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 38,
@@ -970,9 +937,7 @@
     "originalPrice": 7475,
     "currentPrice": 6500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -981,7 +946,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 39,
@@ -999,9 +965,7 @@
     "originalPrice": 7475,
     "currentPrice": 6500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1010,7 +974,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 40,
@@ -1027,9 +992,7 @@
     "originalPrice": 8050,
     "currentPrice": 7000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1038,7 +1001,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 41,
@@ -1052,9 +1016,7 @@
     "originalPrice": 18400,
     "currentPrice": 16000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "assets/img/products/05-mecedoras/047.png",
-    "featureTag": "",
     "tags": [
       "nuevo"
     ],
@@ -1065,7 +1027,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 42,
@@ -1079,9 +1042,7 @@
     "originalPrice": 14950,
     "currentPrice": 13000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1090,7 +1051,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 43,
@@ -1106,9 +1068,7 @@
     "originalPrice": 5520,
     "currentPrice": 4800,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1117,7 +1077,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 44,
@@ -1133,9 +1094,7 @@
     "originalPrice": 5520,
     "currentPrice": 4800,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1144,7 +1103,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 45,
@@ -1158,9 +1118,7 @@
     "originalPrice": 5520,
     "currentPrice": 4800,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1169,7 +1127,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 46,
@@ -1186,9 +1145,7 @@
     "originalPrice": 5750,
     "currentPrice": 5000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1197,7 +1154,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 47,
@@ -1213,9 +1171,7 @@
     "originalPrice": 5750,
     "currentPrice": 5000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1224,7 +1180,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 48,
@@ -1238,9 +1195,7 @@
     "originalPrice": 5520,
     "currentPrice": 4800,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1249,7 +1204,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 49,
@@ -1265,9 +1221,7 @@
     "originalPrice": 5750,
     "currentPrice": 5000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1276,7 +1230,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 50,
@@ -1290,9 +1245,7 @@
     "originalPrice": 5750,
     "currentPrice": 5000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1301,7 +1254,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 51,
@@ -1315,9 +1269,7 @@
     "originalPrice": 5750,
     "currentPrice": 5000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "assets/img/products/06-sillas/085.png",
-    "featureTag": "",
     "tags": [
       "nuevo"
     ],
@@ -1328,7 +1280,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 52,
@@ -1344,9 +1297,7 @@
     "originalPrice": 5750,
     "currentPrice": 5000,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1355,7 +1306,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 53,
@@ -1371,9 +1323,7 @@
     "originalPrice": 10925,
     "currentPrice": 9500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1382,7 +1332,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 54,
@@ -1396,9 +1347,7 @@
     "originalPrice": 10925,
     "currentPrice": 9500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1407,7 +1356,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 55,
@@ -1421,9 +1371,7 @@
     "originalPrice": 10925,
     "currentPrice": 9500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1432,7 +1380,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 56,
@@ -1446,9 +1395,7 @@
     "originalPrice": 10925,
     "currentPrice": 9500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1457,7 +1404,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 57,
@@ -1471,9 +1419,7 @@
     "originalPrice": 10925,
     "currentPrice": 9500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1482,7 +1428,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 58,
@@ -1496,9 +1443,7 @@
     "originalPrice": 10925,
     "currentPrice": 9500,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1507,7 +1452,8 @@
     "marketingPhrase": "",
     "status": "activo",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 59,
@@ -1521,9 +1467,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1532,7 +1476,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 60,
@@ -1546,9 +1491,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1557,7 +1500,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 61,
@@ -1571,9 +1515,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1582,7 +1524,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 62,
@@ -1596,9 +1539,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1607,7 +1548,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 63,
@@ -1621,9 +1563,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1632,7 +1572,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 64,
@@ -1646,9 +1587,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1657,7 +1596,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 65,
@@ -1671,9 +1611,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1682,7 +1620,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 66,
@@ -1696,9 +1635,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1707,7 +1644,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 67,
@@ -1721,9 +1659,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1732,7 +1668,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 68,
@@ -1746,9 +1683,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1757,7 +1692,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 69,
@@ -1771,9 +1707,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1782,7 +1716,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 70,
@@ -1796,9 +1731,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1807,7 +1740,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 71,
@@ -1821,9 +1755,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1832,7 +1764,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 72,
@@ -1846,9 +1779,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1857,7 +1788,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 73,
@@ -1871,9 +1803,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1882,7 +1812,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 74,
@@ -1896,9 +1827,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1907,7 +1836,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 75,
@@ -1921,9 +1851,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1932,7 +1860,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 76,
@@ -1946,9 +1875,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1957,7 +1884,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 77,
@@ -1971,9 +1899,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -1982,7 +1908,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 78,
@@ -1996,9 +1923,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -2007,7 +1932,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 79,
@@ -2021,9 +1947,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -2032,7 +1956,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 80,
@@ -2046,9 +1971,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -2057,7 +1980,8 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   },
   {
     "id": 81,
@@ -2071,9 +1995,7 @@
     "originalPrice": 0,
     "currentPrice": 0,
     "shippingComponents": [],
-    "taggedSection": null,
     "featuredImage": "",
-    "featureTag": "",
     "tags": [],
     "score": 0,
     "ratings": 0,
@@ -2082,6 +2004,7 @@
     "marketingPhrase": "",
     "status": "pendiente",
     "createdAt": "2026-07-27T18:38:16.137Z",
-    "updatedAt": "2026-07-27T18:38:16.137Z"
+    "updatedAt": "2026-07-27T18:38:16.137Z",
+    "featuredSection": null
   }
 ]

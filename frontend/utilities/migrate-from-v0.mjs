@@ -74,9 +74,8 @@ if (existsSync(v0ProductsPath)) {
     originalPrice: 0,              // Placeholder
     currentPrice: 0,               // Placeholder
     shippingComponents: [],        // Will be filled by admin
-    taggedSection: null,
+    featuredSection: null,
     featuredImage: '',
-    featureTag: '',
     tags: [],
     score: 0,
     ratings: 0,

@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { AdminApiService } from '../../core/services/admin-api.service';
 import { ProductService } from '../../core/services/product.service';
 import { ProductPreviewComponent } from '../product-preview/product-preview.component';
-import type { Product, ProductStatus } from '@shared/models/product.model';
+import type { Product, ProductStatus, FeaturedSection } from '@shared/models/product.model';
 import type { Category, CategoryVariant } from '@shared/models/category.model';
 import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
 
@@ -255,30 +255,31 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
 
         <!-- Product Highlighting (Featured / New) -->
         <div class="md:col-span-2 border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
-          <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">🏆 Producto Destacado</h3>
+          <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">🏆 Sección en Home</h3>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Tags -->
+            <!-- Featured Section -->
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Tags
+                Sección destacada
               </label>
               <div class="flex gap-4">
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox"
-                         [checked]="isTagged('destacados')"
-                         (change)="toggleTag('destacados')"
+                         [checked]="isSection('destacados')"
+                         (change)="toggleSection('destacados')"
                          class="rounded border-gray-300 text-amber-600 focus:ring-amber-500" />
                   <span class="text-sm text-gray-700 dark:text-gray-300">Destacados</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox"
-                         [checked]="isTagged('nuevos')"
-                         (change)="toggleTag('nuevos')"
+                         [checked]="isSection('nuevos')"
+                         (change)="toggleSection('nuevos')"
                          class="rounded border-gray-300 text-amber-600 focus:ring-amber-500" />
                   <span class="text-sm text-gray-700 dark:text-gray-300">Nuevos</span>
                 </label>
               </div>
+              <p class="text-xs text-gray-400 mt-1">Requiere imagen destacada para aparecer en el Home.</p>
             </div>
 
             <!-- Featured Image Selector -->
@@ -287,7 +288,7 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
                 Imagen destacada
               </label>
               <select [(ngModel)]="formState.featuredImage" name="featuredImage"
-                      [disabled]="!hasTag()"
+                      [disabled]="!hasFeaturedSection()"
                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
                              bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                              disabled:opacity-50 disabled:cursor-not-allowed">
@@ -298,7 +299,7 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
                   </option>
                 }
               </select>
-              @if (!hasTag()) {
+              @if (!hasFeaturedSection()) {
                 <p class="text-xs text-gray-400 mt-1">Selecciona "Destacados" o "Nuevos" para habilitar.</p>
               }
               @if (featuredImagePreview()) {
@@ -307,15 +308,36 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
               }
             </div>
 
-            <!-- Feature Tag -->
+            <!-- Tags (badges independientes) -->
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Etiqueta de oferta
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Tags (badges en la tarjeta)
               </label>
-              <input [(ngModel)]="formState.featureTag" name="featureTag"
-                     placeholder="-10%, Envio gratis, etc."
-                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                            bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+              <div class="flex gap-2">
+                <input [(ngModel)]="newTag" name="newTag"
+                       (keyup.enter)="addTag(); $event.preventDefault()"
+                       placeholder="nuevo, -10%, oferta..."
+                       class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                              bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                <button type="button" (click)="addTag()"
+                        class="px-3 py-2 text-sm font-medium rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition-colors cursor-pointer">
+                  Agregar
+                </button>
+              </div>
+              @if (formState.tags.length > 0) {
+                <div class="flex flex-wrap gap-2 mt-2">
+                  @for (tag of formState.tags; track tag; let i = $index) {
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full
+                                 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                      {{ tag }}
+                      <button type="button" (click)="removeTag(i)"
+                              class="text-gray-400 hover:text-red-500 cursor-pointer">✕</button>
+                    </span>
+                  }
+                </div>
+              } @else {
+                <p class="text-xs text-gray-400 mt-1">Sin tags. Se muestran como badges sobre la tarjeta.</p>
+              }
             </div>
           </div>
         </div>
@@ -479,9 +501,9 @@ export class ProductFormComponent implements OnInit {
     longDescription: '',
     marketingPhrase: '',
     status: 'pendiente' as ProductStatus,
-    taggedSection: null as 'destacados' | 'nuevos' | null,
+    featuredSection: null as FeaturedSection | null,
     featuredImage: '',
-    featureTag: '',
+    tags: [] as string[],
     resolvedId: null as number | null,  // id de Neon si el producto está migrado, si no id local
   };
 
@@ -552,9 +574,9 @@ export class ProductFormComponent implements OnInit {
       longDescription: prod.longDescription,
       marketingPhrase: prod.marketingPhrase,
       status: prod.status,
-      taggedSection: prod.taggedSection ?? null,
+      featuredSection: prod.featuredSection ?? null,
       featuredImage,
-      featureTag: prod.featureTag ?? '',
+      tags: prod.tags ?? [],
       resolvedId: prod.id,
     };
   }
@@ -588,7 +610,6 @@ export class ProductFormComponent implements OnInit {
         const fullPayload = {
           ...payload,
           shippingComponents: [],
-          tags: [],
           score: 0,
           ratings: 0,
         };
@@ -665,36 +686,33 @@ export class ProductFormComponent implements OnInit {
     return this.formState.featuredImage || this.formState.image;
   }
 
-  protected hasTag(): boolean {
-    return this.formState.taggedSection !== null;
+  protected hasFeaturedSection(): boolean {
+    return this.formState.featuredSection !== null;
   }
 
-  protected isTagged(section: 'destacados' | 'nuevos'): boolean {
-    if (section === 'nuevos') {
-      return this.formState.taggedSection === 'nuevos';
-    }
-    // 'destacados' o ambos
-    return this.formState.taggedSection === 'destacados' || this.formState.taggedSection === 'nuevos';
+  protected isSection(section: FeaturedSection): boolean {
+    return this.formState.featuredSection === section;
   }
 
-  protected toggleTag(section: 'destacados' | 'nuevos'): void {
-    if (this.isTagged(section)) {
-      // Quitar este tag
-      if (section === 'nuevos') {
-        this.formState.taggedSection = this.formState.taggedSection === 'nuevos' ? null : 'destacados';
-      } else {
-        this.formState.taggedSection = this.formState.taggedSection === 'destacados' ? null : 'nuevos';
-      }
-    } else {
-      // Agregar este tag (manteniendo el otro si existe)
-      const current = this.formState.taggedSection;
-      if (!current) {
-        this.formState.taggedSection = section;
-      } else if (current !== section) {
-        // Ya tiene un tag, agregar el otro significa 'nuevos' (el más específico)
-        this.formState.taggedSection = 'nuevos';
-      }
+  protected toggleSection(section: FeaturedSection): void {
+    this.formState.featuredSection = this.formState.featuredSection === section ? null : section;
+  }
+
+  // ── Tags editor (badges independientes de la sección) ───────────────────
+
+  protected newTag = '';
+
+  protected addTag(): void {
+    const tag = this.newTag.trim().toLowerCase();
+    if (!tag) return;
+    if (!this.formState.tags.includes(tag)) {
+      this.formState.tags = [...this.formState.tags, tag];
     }
+    this.newTag = '';
+  }
+
+  protected removeTag(index: number): void {
+    this.formState.tags = this.formState.tags.filter((_, i) => i !== index);
   }
 
   // ── Price framing ────────────────────────────────────────────────────────
@@ -858,9 +876,9 @@ export class ProductFormComponent implements OnInit {
       longDescription: '',
       marketingPhrase: '',
       status: 'pendiente',
-      taggedSection: null,
+      featuredSection: null,
       featuredImage: '',
-      featureTag: '',
+      tags: [],
       resolvedId: null,
     };
     this.suggestedNames.set([]);
@@ -905,10 +923,9 @@ export class ProductFormComponent implements OnInit {
       originalPrice,
       currentPrice: this.formState.currentPrice,
       shippingComponents: existing?.shippingComponents ?? [],
-      taggedSection: this.formState.taggedSection,
+      featuredSection: this.formState.featuredSection,
       featuredImage: this.formState.featuredImage || this.formState.image,
-      featureTag: this.formState.featureTag,
-      tags: existing?.tags ?? [],
+      tags: this.formState.tags,
       score: existing?.score ?? 0,
       ratings: existing?.ratings ?? 0,
       shortDescription: this.formState.shortDescription,

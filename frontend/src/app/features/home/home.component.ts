@@ -86,6 +86,34 @@ import { SeoService } from '../../core/services/seo.service';
         </section>
       }
 
+      <!-- New Products -->
+      @if (newProducts().length > 0) {
+        <section class="py-16 md:py-20 bg-white dark:bg-gray-900">
+          <div class="container-fluid max-w-[1720px] mx-auto px-4 sm:px-6">
+            <!-- Header -->
+            <div class="max-w-xl mx-auto mb-8 md:mb-12 text-center" appScrollAnimation="fade-up">
+              <div>
+                <img src="assets/img/svg/like.svg" class="mx-auto w-14 sm:w-20" alt="nuevos" />
+              </div>
+              <h2 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mt-4 md:mt-6">
+                Nuevos Ingresos
+              </h2>
+              <p class="text-gray-600 dark:text-gray-400 mt-3">
+                Las piezas m&aacute;s recientes de nuestro taller, listas para tu hogar.
+              </p>
+            </div>
+
+            <!-- Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 lg:gap-8"
+                 appScrollAnimation="fade-up" [scrollDelay]="100">
+              @for (product of newProducts(); track product.id) {
+                <app-product-card [product]="product" />
+              }
+            </div>
+          </div>
+        </section>
+      }
+
       <!-- Why Us / Ofrecemos -->
       <section class="relative py-16 md:py-20 bg-overlay before:bg-black/60 dark:before:bg-title/80"
                style="background-image: url('assets/img/home-v1/choose-us-bg-02.jpg'); background-size: cover; background-position: center;">
@@ -156,6 +184,7 @@ export class HomeComponent implements OnInit {
 
   protected categories = this.categoryService.categories;
   protected featuredProducts = this.productService.featuredProducts;
+  protected newProducts = this.productService.newProducts;
 
   ngOnInit(): void {
     this.seoService.setPageSeo({

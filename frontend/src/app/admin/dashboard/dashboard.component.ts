@@ -50,7 +50,7 @@ import type { Product } from '@shared/models/product.model';
               <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">SKU</th>
               <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Nombre</th>
               <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Categoria</th>
-              <th class="text-center px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Destacado</th>
+              <th class="text-center px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Sección</th>
               <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Tags</th>
               <th class="text-right px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Precio</th>
               <th class="text-center px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Estado</th>
@@ -80,9 +80,9 @@ import type { Product } from '@shared/models/product.model';
                 </td>
                 <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ getCategoryName(product.categoryId) }}</td>
                 <td class="px-4 py-3 text-center">
-                  @if (product.featureTag) {
+                  @if (product.featuredSection) {
                     <span class="inline-block px-2.5 py-0.5 text-xs font-medium rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
-                      {{ product.featureTag }}
+                      {{ product.featuredSection === 'destacados' ? 'Destacados' : 'Nuevos' }}
                     </span>
                   }
                 </td>

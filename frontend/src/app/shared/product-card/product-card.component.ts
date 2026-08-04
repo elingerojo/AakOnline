@@ -22,18 +22,16 @@ import type { Product } from '@shared/models/product.model';
           />
         </a>
 
-        <!-- Badge: Descuento (rojo) -->
-        @if (product().featureTag) {
-          <span class="btn-tag absolute top-3 left-3 z-10">
-            {{ product().featureTag }}
-          </span>
-        }
-
-        <!-- Badge: Tag 'nuevo' (verde) -->
-        @if (product().tags.includes('nuevo')) {
-          <span class="absolute top-3 right-3 z-10 px-3 py-1 text-xs font-bold rounded-full bg-moss-green text-white uppercase tracking-wide">
-            Nuevo
-          </span>
+        <!-- Badges: Tags del producto (independientes de la sección) -->
+        @if (product().tags.length > 0) {
+          <div class="absolute top-3 left-3 z-10 flex flex-col gap-1.5 items-start">
+            @for (tag of product().tags; track tag) {
+              <span [class]="tagClass(tag)"
+                    class="px-3 py-1 text-xs font-bold rounded-full uppercase tracking-wide">
+                {{ tag }}
+              </span>
+            }
+          </div>
         }
 
         <!-- Quick actions overlay (opacity + slide up from behind text) -->
@@ -69,4 +67,11 @@ import type { Product } from '@shared/models/product.model';
 export class ProductCardComponent {
   readonly product = input.required<Product>();
   protected readonly formatCurrency = formatCurrency;
+
+  /** Estilo del badge según el tag (verde para "nuevo", rojo para descuentos/ofertas, gris por defecto). */
+  protected tagClass(tag: string): string {
+    if (tag === 'nuevo') return 'bg-moss-green text-white';
+    if (/^-?\d+%$/.test(tag) || /oferta|descuento/i.test(tag)) return 'bg-red-500 text-white';
+    return 'bg-gray-500 text-white';
+  }
 }

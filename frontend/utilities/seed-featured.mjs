@@ -1,33 +1,92 @@
-import { readFileSync, writeFileSync } from 'fs';
+/**
+ * seed-featured.mjs — Normalizador de consistencia del catálogo (modelo nuevo).
+ *
+ * Ya NO fabrica productos destacados ni placeholders. Su único trabajo es dejar
+ * los 81 productos lo más fieles posible a su dato actual, pero consistentes con
+ * el modelo actual:
+ *
+ *   - featuredImage = gate para aparecer en CUALQUIER sección del Home.
+ *   - featuredSection = sección ('destacados' | 'nuevos' | null).
+ *   - tags = badges sobre la tarjeta (independientes de la sección).
+ *   - featureTag fue eliminado del modelo.
+ *
+ * Reglas (solo lo indispensable):
+ *   1. Normaliza tags a arreglo.
+ *   2. Elimina restos defensivos de featureTag / taggedSection (legacy).
+ *   3. Si un producto tiene featuredSection definida, garantiza featuredImage
+ *      (el gate): si está vacía, usa la imagen principal. Sin esto, la sección
+ *      no surtiría efecto.
+ *   4. NO toca nombre, precios, score, ratings, status ni asigna secciones.
+ *
+ * Procesa frontend/src/app/core/data/products.json (fuente del build/admin) y
+ * backend/shared/data/products.json (fuente del seed de Neon) para que todo el
+ * catálogo quede consistente.
+ *
+ * Uso: node utilities/seed-featured.mjs
+ */
+import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const productsPath = join(__dirname, '..', 'src', 'app', 'core', 'data', 'products.json');
+const ROOT = join(__dirname, '..');
 
-const products = JSON.parse(readFileSync(productsPath, 'utf8'));
-console.log(`Total products: ${products.length}`);
+const TARGETS = [
+  join(ROOT, 'src', 'app', 'core', 'data', 'products.json'),
+  join(ROOT, '..', 'backend', 'shared', 'data', 'products.json'),
+];
 
-// Pick 6 products spread across different categories
-const pickIndices = [0, 10, 20, 30, 40, 50];
-
-pickIndices.forEach((idx, i) => {
-  if (idx >= products.length) return;
-  const p = products[idx];
-  p.featuredImage = p.image || '';
-  p.currentPrice = 2500 + (i * 1200);
-  p.originalPrice = p.currentPrice + 800 + (i * 200);
-  p.score = 4.5 + (i * 0.1);
-  p.ratings = 5 + i;
-  p.status = 'activo';
-  p.name = `Producto Destacado ${idx + 1}`;
-  p.tags = p.tags || [];
-  p.featureTag = i < 2 ? `-${10 + i * 5}%` : '';
-  if (i >= 3) {
-    if (!p.tags.includes('nuevo')) p.tags.push('nuevo');
+function normalize(path) {
+  if (!existsSync(path)) {
+    console.warn(`[seed-featured] ⚠️  No existe: ${path}. Se omite.`);
+    return;
   }
-  console.log(`  [${idx}] id=${p.id}, cat=${p.categoryId}, image=${p.image?.substring(0, 40)}..., featuredImage set`);
-});
 
-writeFileSync(productsPath, JSON.stringify(products, null, 2));
-console.log('Done!');
+  const products = JSON.parse(readFileSync(path, 'utf8'));
+  let withSection = 0;
+  let imageCompleted = 0;
+  let tagsFixed = 0;
+  let legacyRemoved = 0;
+
+  for (const p of products) {
+    // 1) tags siempre como arreglo
+    if (!Array.isArray(p.tags)) {
+      p.tags = [];
+      tagsFixed++;
+    }
+
+    // 2) Restos del modelo viejo (defensivo)
+    if ('featureTag' in p) {
+      delete p.featureTag;
+      legacyRemoved++;
+    }
+    if ('taggedSection' in p) {
+      delete p.taggedSection;
+      legacyRemoved++;
+    }
+
+    // 3) Gate: si hay sección, garantizar featuredImage
+    if (p.featuredSection) {
+      withSection++;
+      const fi = typeof p.featuredImage === 'string' ? p.featuredImage.trim() : '';
+      if (!fi) {
+        p.featuredImage = p.image || '';
+        imageCompleted++;
+      }
+    }
+  }
+
+  writeFileSync(path, JSON.stringify(products, null, 2) + '\n');
+  console.log(`[seed-featured] ✅ ${path}`);
+  console.log(
+    `   productos=${products.length}, con featuredSection=${withSection}, ` +
+      `featuredImage completada=${imageCompleted}, tags normalizados=${tagsFixed}, ` +
+      `legacy removido=${legacyRemoved}`
+  );
+}
+
+console.log('=== seed-featured: normalización de consistencia ===\n');
+for (const target of TARGETS) {
+  normalize(target);
+}
+console.log('\n=== Listo. El Home muestra solo lo que el admin configure en featuredSection. ===');

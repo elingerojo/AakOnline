@@ -20,9 +20,8 @@ export interface Product {
   shippingComponents: ShippingComponent[];
 
   // Metadata
-  taggedSection: 'destacados' | 'nuevos' | null;
+  featuredSection: FeaturedSection | null;
   featuredImage: string;
-  featureTag: string;
   tags: string[];
   score: number;
   ratings: number;
@@ -39,6 +38,9 @@ export interface Product {
 }
 
 export type ProductStatus = 'pendiente' | 'activo' | 'suspendido' | 'almacenado';
+
+/** Sección del Home donde se despliega el producto (requiere featuredImage). */
+export type FeaturedSection = 'destacados' | 'nuevos';
 
 export interface VariantSelection {
   variantId: string;

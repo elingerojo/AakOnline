@@ -19,7 +19,7 @@ type FieldKey =
   | 'shippingComponents'
   | 'variantSelections'
   | 'featuredImage'
-  | 'featureTag';
+  | 'tags';
 
 type FieldStatus = 'empty' | 'gemini' | 'normal';
 
@@ -35,7 +35,7 @@ const FIELD_LABELS: Record<FieldKey, string> = {
   shippingComponents: 'Datos de embarque',
   variantSelections: 'Variantes',
   featuredImage: 'Imagen destacada',
-  featureTag: 'Etiqueta de oferta',
+  tags: 'Tags',
 };
 
 /**
@@ -237,7 +237,7 @@ const FIELD_LABELS: Record<FieldKey, string> = {
             </section>
 
             <!-- Producto destacado (solo si tiene tag) -->
-            @if (prod.taggedSection) {
+            @if (prod.featuredSection) {
               <section class="mt-8 p-3">
                 <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-3">🏆 Producto destacado</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -258,19 +258,24 @@ const FIELD_LABELS: Record<FieldKey, string> = {
                     </div>
                   </div>
                   <div>
-                    <div [class]="frameClass(status('featureTag'))">
-                      @if (status('featureTag') !== 'normal') {
-                        <span [class]="badgeClass(status('featureTag'))"
+                    <div [class]="frameClass(status('tags'))">
+                      @if (status('tags') !== 'normal') {
+                        <span [class]="badgeClass(status('tags'))"
                               class="inline-block mb-1 px-2 py-0.5 rounded-full text-xs font-medium">
-                          {{ badgeText(status('featureTag'), 'Etiqueta') }}
+                          {{ badgeText(status('tags'), 'Tags') }}
                         </span>
                       }
-                      @if (prod.featureTag) {
-                        <span class="inline-block px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full text-sm font-medium">
-                          {{ prod.featureTag }}
-                        </span>
+                      @if ((prod.tags?.length ?? 0) > 0) {
+                        <div class="flex flex-wrap gap-2">
+                          @for (tag of prod.tags; track tag) {
+                            <span class="inline-block px-2.5 py-1 text-xs font-medium rounded-full
+                                         bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                              {{ tag }}
+                            </span>
+                          }
+                        </div>
                       } @else {
-                        <p class="text-sm text-gray-400 italic">Sin etiqueta de oferta.</p>
+                        <p class="text-sm text-gray-400 italic">Sin tags.</p>
                       }
                     </div>
                   </div>
@@ -393,9 +398,9 @@ export class ProductPreviewComponent {
         return (this.category()?.variants?.length ?? 0) > 0 &&
           (!p.variantSelections || p.variantSelections.length === 0);
       case 'featuredImage':
-        return !!p.taggedSection && this.isBlank(p.featuredImage);
-      case 'featureTag':
-        return !!p.taggedSection && this.isBlank(p.featureTag);
+        return !!p.featuredSection && this.isBlank(p.featuredImage);
+      case 'tags':
+        return !!p.featuredSection && (!p.tags || p.tags.length === 0);
       default:
         return false;
     }
