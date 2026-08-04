@@ -17,6 +17,7 @@ export interface QuoteVariantSelection {
 
 export interface QuoteSummary {
   items: QuoteItem[];
+  unpricedItems: QuoteItem[];
   subtotal: number;
   iva: number;
   totalShipping: number;

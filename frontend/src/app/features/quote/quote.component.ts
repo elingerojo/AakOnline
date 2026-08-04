@@ -38,107 +38,162 @@ import { formatCurrency } from '../../core/utils/text-utils';
             <a routerLink="/shop" class="text-amber-600 hover:underline">Explorar catalogo</a>
           </div>
         } @else {
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Items List -->
-            <div class="lg:col-span-2 space-y-4" data-aos="fade-right">
-              @for (item of quoteService.items(); track item.productId; let i = $index) {
-                <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-                  <div class="flex gap-4">
-                    <img [src]="item.image" [alt]="item.productName"
-                         class="w-20 h-20 object-cover rounded-lg flex-shrink-0" loading="lazy" />
-                    <div class="flex-1 min-w-0">
-                      <h3 class="font-semibold text-gray-900 dark:text-white">{{ item.productName }}</h3>
-                      
-                      <!-- Selected variants -->
-                      @if (item.selectedVariants.length > 0) {
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          @for (v of item.selectedVariants; track v.variantLabel) {
-                            <span class="mr-3">{{ v.variantLabel }}: {{ v.optionName }}</span>
-                          }
-                        </div>
-                      }
+          @if (quoteService.pricedItems().length > 0) {
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <!-- Items List -->
+              <div class="lg:col-span-2 space-y-4" data-aos="fade-right">
+                @for (item of quoteService.pricedItems(); track item.productId) {
+                  <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                    <div class="flex gap-4">
+                      <img [src]="item.image" [alt]="item.productName"
+                           class="w-20 h-20 object-cover rounded-lg flex-shrink-0" loading="lazy" />
+                      <div class="flex-1 min-w-0">
+                        <h3 class="font-semibold text-gray-900 dark:text-white">{{ item.productName }}</h3>
 
-                      <div class="flex items-center justify-between mt-2">
-                        <app-inc-dec [value]="item.qty" (changed)="updateQty(item.productId, $event)" />
-                        <div class="text-right">
-                          <p class="text-sm text-gray-500 dark:text-gray-400">
-                            {{ formatCurrency(item.unitPrice) }} c/u
-                          </p>
-                          <p class="font-semibold text-gray-900 dark:text-white">
-                            {{ formatCurrency(item.subtotal) }}
-                          </p>
+                        <!-- Selected variants -->
+                        @if (item.selectedVariants.length > 0) {
+                          <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            @for (v of item.selectedVariants; track v.variantLabel) {
+                              <span class="mr-3">{{ v.variantLabel }}: {{ v.optionName }}</span>
+                            }
+                          </div>
+                        }
+
+                        <div class="flex items-center justify-between mt-2">
+                          <app-inc-dec [value]="item.qty" (changed)="updateQty(item.productId, $event)" />
+                          <div class="text-right">
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                              {{ formatCurrency(item.unitPrice) }} c/u
+                            </p>
+                            <p class="font-semibold text-gray-900 dark:text-white">
+                              {{ formatCurrency(item.subtotal) }}
+                            </p>
+                          </div>
                         </div>
+
+                        <button
+                          (click)="removeItem(item.productId)"
+                          class="mt-2 text-xs text-red-500 hover:text-red-600 cursor-pointer"
+                        >
+                          Eliminar
+                        </button>
                       </div>
-
-                      <button
-                        (click)="removeItem(item.productId)"
-                        class="mt-2 text-xs text-red-500 hover:text-red-600 cursor-pointer"
-                      >
-                        Eliminar
-                      </button>
                     </div>
                   </div>
-                </div>
-              }
-            </div>
+                }
+              </div>
 
-            <!-- Summary Sidebar -->
-            <div class="lg:sticky lg:top-24 h-fit" data-aos="fade-left">
-              <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Resumen</h2>
+              <!-- Summary Sidebar -->
+              <div class="lg:sticky lg:top-24 h-fit" data-aos="fade-left">
+                <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                  <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Resumen</h2>
 
-                <div class="space-y-3 text-sm">
-                  <div class="flex justify-between">
-                    <span class="text-gray-500 dark:text-gray-400">Subtotal</span>
-                    <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(quoteService.subtotal()) }}</span>
+                  <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                      <span class="text-gray-500 dark:text-gray-400">Subtotal</span>
+                      <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(quoteService.subtotal()) }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-500 dark:text-gray-400">IVA (16%)</span>
+                      <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(quoteService.iva()) }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-500 dark:text-gray-400">Envio</span>
+                      <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(quoteService.totalShipping()) }}</span>
+                    </div>
+                    <hr class="border-gray-300 dark:border-gray-600" />
+                    <div class="flex justify-between text-base">
+                      <span class="font-bold text-gray-900 dark:text-white">Total</span>
+                      <span class="font-bold text-amber-600 dark:text-amber-400">{{ formatCurrency(quoteService.grandTotal()) }}</span>
+                    </div>
                   </div>
-                  <div class="flex justify-between">
-                    <span class="text-gray-500 dark:text-gray-400">IVA (16%)</span>
-                    <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(quoteService.iva()) }}</span>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="text-gray-500 dark:text-gray-400">Envio</span>
-                    <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(quoteService.totalShipping()) }}</span>
-                  </div>
-                  <hr class="border-gray-300 dark:border-gray-600" />
-                  <div class="flex justify-between text-base">
-                    <span class="font-bold text-gray-900 dark:text-white">Total</span>
-                    <span class="font-bold text-amber-600 dark:text-amber-400">{{ formatCurrency(quoteService.grandTotal()) }}</span>
-                  </div>
-                </div>
 
-                <!-- Actions -->
-                <div class="mt-6 space-y-3">
-                  <button
-                    (click)="generatePdf()"
-                    [disabled]="isGenerating"
-                    class="w-full px-4 py-2.5 bg-amber-600 text-white font-medium rounded-lg
-                           hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed
-                           transition-colors cursor-pointer"
-                  >
-                    {{ isGenerating ? 'Generando...' : 'Descargar PDF' }}
-                  </button>
+                  <!-- Actions -->
+                  <div class="mt-6 space-y-3">
+                    <button
+                      (click)="generatePdf()"
+                      [disabled]="isGenerating"
+                      class="w-full px-4 py-2.5 bg-amber-600 text-white font-medium rounded-lg
+                             hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed
+                             transition-colors cursor-pointer"
+                    >
+                      {{ isGenerating ? 'Generando...' : 'Descargar PDF' }}
+                    </button>
 
-                  <button
-                    (click)="previewPdf()"
-                    [disabled]="isGenerating"
-                    class="w-full px-4 py-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-medium
-                           rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50
-                           dark:hover:bg-gray-600 disabled:opacity-50 transition-colors cursor-pointer"
-                  >
-                    Vista previa
-                  </button>
+                    <button
+                      (click)="previewPdf()"
+                      [disabled]="isGenerating"
+                      class="w-full px-4 py-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-medium
+                             rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50
+                             dark:hover:bg-gray-600 disabled:opacity-50 transition-colors cursor-pointer"
+                    >
+                      Vista previa
+                    </button>
 
-                  <button
-                    (click)="clearQuote()"
-                    class="w-full px-4 py-2 text-sm text-red-500 hover:text-red-600 cursor-pointer"
-                  >
-                    Vaciar cotizacion
-                  </button>
+                    <button
+                      (click)="clearQuote()"
+                      class="w-full px-4 py-2 text-sm text-red-500 hover:text-red-600 cursor-pointer"
+                    >
+                      Vaciar cotizacion
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          }
+
+          <!-- Por Cotizar Section -->
+          @if (quoteService.unpricedItems().length > 0) {
+            <section class="mt-8" data-aos="fade-up">
+              <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-1">Productos por Cotizar</h2>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Los siguientes productos no tienen precio todavia y quedan registrados para una futura cotizacion.
+              </p>
+              <div class="overflow-x-auto bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                <table class="w-full text-sm">
+                  <thead class="text-left text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                    <tr>
+                      <th class="p-3"></th>
+                      <th class="p-3">Producto</th>
+                      <th class="p-3">Cantidad</th>
+                      <th class="p-3"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (item of quoteService.unpricedItems(); track item.productId) {
+                      <tr class="border-b border-gray-200 dark:border-gray-700 last:border-0">
+                        <td class="p-3">
+                          <img [src]="item.image" [alt]="item.productName"
+                               class="w-14 h-14 object-cover rounded-lg" loading="lazy" />
+                        </td>
+                        <td class="p-3">
+                          <p class="font-medium text-gray-900 dark:text-white">{{ item.productName }}</p>
+                          @if (item.selectedVariants.length > 0) {
+                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              @for (v of item.selectedVariants; track v.variantLabel) {
+                                <span class="mr-3">{{ v.variantLabel }}: {{ v.optionName }}</span>
+                              }
+                            </div>
+                          }
+                        </td>
+                        <td class="p-3">
+                          <app-inc-dec [value]="item.qty" (changed)="updateQty(item.productId, $event)" />
+                        </td>
+                        <td class="p-3 text-right">
+                          <button
+                            (click)="removeItem(item.productId)"
+                            class="text-xs text-red-500 hover:text-red-600 cursor-pointer"
+                          >
+                            Eliminar
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          }
         }
       </div>
     </main>

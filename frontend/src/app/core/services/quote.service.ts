@@ -13,9 +13,22 @@ export class QuoteService {
   /** Number of items in the quote */
   readonly itemCount = computed(() => this.items().length);
 
-  /** Subtotal (sum of all item subtotals) */
+  /** Threshold: below 1, a product is considered to have no price yet. */
+  private readonly PRICE_THRESHOLD = 1;
+
+  /** Items ready to be quoted (unitPrice >= 1). */
+  readonly pricedItems = computed(() =>
+    this.items().filter(item => item.unitPrice >= this.PRICE_THRESHOLD)
+  );
+
+  /** Items with no price yet, registered for future quoting (unitPrice < 1). */
+  readonly unpricedItems = computed(() =>
+    this.items().filter(item => item.unitPrice < this.PRICE_THRESHOLD)
+  );
+
+  /** Subtotal (sum of all priced item subtotals) */
   readonly subtotal = computed(() =>
-    this.items().reduce((acc, item) => acc + item.subtotal, 0)
+    this.pricedItems().reduce((acc, item) => acc + item.subtotal, 0)
   );
 
   /** IVA (16% of subtotal) */
@@ -23,7 +36,7 @@ export class QuoteService {
 
   /** Total shipping cost */
   readonly totalShipping = computed(() =>
-    this.items().reduce((acc, item) => acc + item.shippingCost, 0)
+    this.pricedItems().reduce((acc, item) => acc + item.shippingCost, 0)
   );
 
   /** Grand total (subtotal + iva + shipping) */
@@ -99,7 +112,8 @@ export class QuoteService {
   /** Get a full summary of the current quote */
   getSummary(distanceKm: number = 0): QuoteSummary {
     return {
-      items: this.itemsSignal(),
+      items: this.pricedItems(),
+      unpricedItems: this.unpricedItems(),
       subtotal: this.subtotal(),
       iva: this.iva(),
       totalShipping: this.totalShipping(),
