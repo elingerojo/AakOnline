@@ -70,7 +70,8 @@
               }
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.css",
+              "lightgallery/css/lightgallery-bundle.min.css"
             ],
             "polyfills": ["@angular/localize/init"],
             "allowedCommonJsDependencies": [

@@ -21,7 +21,10 @@ import { ThemeSwitcherComponent } from '../theme-switcher/theme-switcher.compone
 
           <!-- Logo -->
           <a routerLink="/" class="cursor-pointer block min-w-0" aria-label="Aak Artesanias">
-            <img src="assets/img/Logo_mini_Aak_para-App-02.png" alt="Aak" class="w-[100px] sm:w-[200px]" />
+            <!-- Imagen para Modo Claro -->
+            <img src="assets/img/Logo_mini_Aak_para-App-02.png" alt="Logo" class="sm:w-[140px] block dark:hidden" />
+            <!-- Imagen para Modo Oscuro -->
+            <img src="assets/img/Logo_mini_Aak_para-App-02-dark.png" alt="Logo" class="sm:w-[140px] hidden dark:block" />
           </a>
 
           <!-- Desktop Nav -->
