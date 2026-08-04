@@ -50,6 +50,8 @@ import type { Product } from '@shared/models/product.model';
               <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">SKU</th>
               <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Nombre</th>
               <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Categoria</th>
+              <th class="text-center px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Destacado</th>
+              <th class="text-left px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Tags</th>
               <th class="text-right px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Precio</th>
               <th class="text-center px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Estado</th>
               <th class="text-right px-4 py-3 font-medium text-gray-500 dark:text-gray-400">Acciones</th>
@@ -77,6 +79,32 @@ import type { Product } from '@shared/models/product.model';
                   </div>
                 </td>
                 <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ getCategoryName(product.categoryId) }}</td>
+                <td class="px-4 py-3 text-center">
+                  @if (product.featureTag) {
+                    <span class="inline-block px-2.5 py-0.5 text-xs font-medium rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
+                      {{ product.featureTag }}
+                    </span>
+                  }
+                </td>
+                <td class="px-4 py-3">
+                  @if (product.tags.length > 0) {
+                    <span class="inline-flex flex-wrap gap-1.5">
+                      @for (tag of product.tags; track tag; let i = $index) {
+                        @if (i < 2) {
+                          <span class="inline-block px-2.5 py-0.5 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                            {{ tag }}
+                          </span>
+                        }
+                      }
+                      @if (product.tags.length > 2) {
+                        <span class="inline-block px-2.5 py-0.5 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-default"
+                              [title]="product.tags.slice(2).join(', ')">
+                          +{{ product.tags.length - 2 }}
+                        </span>
+                      }
+                    </span>
+                  }
+                </td>
                 <td class="px-4 py-3 text-right text-gray-900 dark:text-white">
                   @if (product.currentPrice > 0) {
                     {{ product.currentPrice | currency:'MXN':'symbol-narrow':'1.0-0' }}
@@ -107,7 +135,7 @@ import type { Product } from '@shared/models/product.model';
               </tr>
             } @empty {
               <tr>
-                <td colspan="6" class="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
+                <td colspan="8" class="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
                   No hay productos en esta categoria.
                 </td>
               </tr>
