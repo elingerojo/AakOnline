@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import * as AOS from 'aos';
 import { QuoteService } from '../../core/services/quote.service';
@@ -112,22 +112,22 @@ import { formatCurrency } from '../../core/utils/text-utils';
                   <div class="mt-6 space-y-3">
                     <button
                       (click)="generatePdf()"
-                      [disabled]="isGenerating"
+                      [disabled]="isDownloading() || isPreviewing()"
                       class="w-full px-4 py-2.5 bg-amber-600 text-white font-medium rounded-lg
                              hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed
                              transition-colors cursor-pointer"
                     >
-                      {{ isGenerating ? 'Generando...' : 'Descargar PDF' }}
+                      {{ isDownloading() ? 'Generando...' : 'Descargar PDF' }}
                     </button>
 
                     <button
                       (click)="previewPdf()"
-                      [disabled]="isGenerating"
+                      [disabled]="isDownloading() || isPreviewing()"
                       class="w-full px-4 py-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-medium
                              rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50
                              dark:hover:bg-gray-600 disabled:opacity-50 transition-colors cursor-pointer"
                     >
-                      Vista previa
+                      {{ isPreviewing() ? 'Generando...' : 'Vista previa' }}
                     </button>
 
                     <button
@@ -207,7 +207,8 @@ export class QuoteComponent implements OnInit {
   private pdfService = inject(PdfService);
   private seoService = inject(SeoService);
 
-  protected isGenerating = false;
+  protected isDownloading = signal(false);
+  protected isPreviewing = signal(false);
   protected readonly formatCurrency = formatCurrency;
 
   ngOnInit(): void {
@@ -231,26 +232,26 @@ export class QuoteComponent implements OnInit {
   }
 
   async generatePdf(): Promise<void> {
-    this.isGenerating = true;
+    this.isDownloading.set(true);
     try {
       const summary = this.quoteService.getSummary();
       await this.pdfService.downloadQuote(summary);
     } catch (err) {
       console.error('Error generating PDF:', err);
     } finally {
-      this.isGenerating = false;
+      this.isDownloading.set(false);
     }
   }
 
   async previewPdf(): Promise<void> {
-    this.isGenerating = true;
+    this.isPreviewing.set(true);
     try {
       const summary = this.quoteService.getSummary();
       await this.pdfService.previewQuote(summary);
     } catch (err) {
       console.error('Error previewing PDF:', err);
     } finally {
-      this.isGenerating = false;
+      this.isPreviewing.set(false);
     }
   }
 }
