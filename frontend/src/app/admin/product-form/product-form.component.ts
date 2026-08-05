@@ -305,7 +305,7 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
                              bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                              disabled:opacity-50 disabled:cursor-not-allowed">
-                <option value="" [selected]="formState.featuredImage === '' || formState.featuredImage === formState.image">
+                <option [value]="hasFeaturedSection() && formState.image ? formState.image : ''">
                   Imagen #1 (principal)
                 </option>
                 @for (img of availableImages; track img; let i = $index) {
@@ -567,13 +567,6 @@ export class ProductFormComponent implements OnInit {
   }
 
   private applyProductToForm(prod: Product): void {
-    // Si la imagen destacada guardada es la misma que la principal,
-    // normalizar a '' para que el select muestre "Misma que la principal"
-    const featuredImage =
-      prod.featuredImage && prod.featuredImage === prod.image
-        ? ''
-        : (prod.featuredImage ?? '');
-
     this.formState = {
       sku: prod.sku,
       categoryId: prod.categoryId,
@@ -588,7 +581,7 @@ export class ProductFormComponent implements OnInit {
       marketingPhrase: prod.marketingPhrase,
       status: prod.status,
       featuredSection: prod.featuredSection ?? null,
-      featuredImage,
+      featuredImage: prod.featuredImage ?? '',
       tags: prod.tags ?? [],
       resolvedId: prod.id,
     };
@@ -711,11 +704,19 @@ export class ProductFormComponent implements OnInit {
     const wasEnabled = this.formState.featuredSection === section;
     this.formState.featuredSection = wasEnabled ? null : section;
 
-    // Al activar una sección del Home (Destacados/Nuevos) con featuredImage
-    // vacía, pre-cargar la imagen principal para que el producto no quede
-    // excluido del Home (featuredProducts/newProducts filtran productos con
-    // featuredImage vacía). Nunca sobreescribe una imagen ya elegida.
-    if (!wasEnabled && !this.formState.featuredImage && this.formState.image) {
+    // Al activar una sección del Home (Destacados/Nuevos), si aún no hay
+    // imagen destacada elegida, pre-cargar la imagen principal para que el
+    // producto no quede excluido del Home (featuredProducts/newProducts
+    // filtran productos con featuredImage vacía).
+    if (!wasEnabled) {
+      this.syncFeaturedImage();
+    }
+  }
+
+  /** Si hay una sección del Home activa y aún no hay imagen destacada elegida,
+   *  pre-cargar la imagen principal para que el producto sí aparezca en el Home. */
+  private syncFeaturedImage(): void {
+    if (this.hasFeaturedSection() && !this.formState.featuredImage && this.formState.image) {
       this.formState.featuredImage = this.formState.image;
     }
   }
@@ -764,6 +765,11 @@ export class ProductFormComponent implements OnInit {
     const target = event?.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null;
     if (target?.name) {
       this.markDirty(target.name);
+      // Si se editó la imagen principal (URL manual) con una sección activa,
+      // asegurar que featuredImage quede pre-cargada.
+      if (target.name === 'image') {
+        this.syncFeaturedImage();
+      }
     }
   }
 
@@ -799,6 +805,7 @@ export class ProductFormComponent implements OnInit {
       const result = await this.adminApi.uploadImage(file);
       this.formState.image = result.url;
       this.markDirty('image');
+      this.syncFeaturedImage();
     } catch (err) {
       this.uploadError.set('Error al subir imagen');
       console.error('Upload failed:', err);
