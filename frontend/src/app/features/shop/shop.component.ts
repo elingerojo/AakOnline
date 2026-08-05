@@ -60,7 +60,7 @@ import { ContactBarComponent } from '../../shared/contact-bar/contact-bar.compon
 export class ShopComponent implements OnInit {
   private productService = inject(ProductService);
   private seoService = inject(SeoService);
-  protected products = this.productService.products;
+  protected products = this.productService.publicProducts;
 
   ngOnInit(): void {
     AOS.init({ delay: 0, duration: 600, easing: 'ease-out', once: true });

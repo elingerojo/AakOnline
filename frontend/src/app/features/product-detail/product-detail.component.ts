@@ -113,10 +113,9 @@ import { formatCurrency } from '../../core/utils/text-utils';
                 />
               </div>
 
-              <!-- SKU & Status -->
+              <!-- SKU -->
               <div class="text-xs text-gray-400 dark:text-gray-500 space-y-1">
                 <p>SKU: {{ prod.sku }}</p>
-                <p>Estado: {{ statusLabel(prod.status) }}</p>
               </div>
             </div>
           </div>
@@ -153,7 +152,7 @@ export class ProductDetailComponent implements OnInit {
 
   protected product = computed(() => {
     const slug = this.route.snapshot.paramMap.get('slug') ?? '';
-    return this.productService.getBySlug(slug);
+    return this.productService.publicProducts().find(p => p.slug === slug);
   });
 
   protected category = computed(() => {
@@ -198,19 +197,9 @@ export class ProductDetailComponent implements OnInit {
     return this.markdownService.toHtml(md);
   }
 
-  statusLabel(status: string): string {
-    const labels: Record<string, string> = {
-      pendiente: 'Pendiente',
-      activo: 'Activo',
-      suspendido: 'Suspendido',
-      almacenado: 'Almacenado',
-    };
-    return labels[status] ?? status;
-  }
-
   addToQuote(): void {
     const prod = this.product();
-    if (!prod || !prod.name || prod.currentPrice <= 0) return;
+    if (!prod || prod.status !== 'activo' || !prod.name || prod.currentPrice <= 0) return;
 
     const variantPrice = this.variantSelections().reduce((sum, v) => sum + v.optionPrice, 0);
     const unitPrice = Math.max(0, prod.currentPrice + variantPrice);

@@ -79,7 +79,7 @@ export class CategoryComponent implements OnInit {
   protected products = computed(() => {
     const cat = this.category();
     if (!cat) return [];
-    return this.productService.getByCategoryId(cat.id);
+    return this.productService.publicProducts().filter(p => p.categoryId === cat.id);
   });
 
   protected productCount = computed(() => this.products().length);

@@ -79,7 +79,7 @@ export class QuickActionsComponent {
 
   toggleQuote(): void {
     const prod = this.product();
-    if (!prod) return;
+    if (!prod || prod.status !== 'activo') return;
 
     if (this.quoteService.has(prod.id)) {
       this.quoteService.removeItem(prod.id);

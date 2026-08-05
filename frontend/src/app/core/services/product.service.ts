@@ -34,41 +34,27 @@ export class ProductService {
     };
   });
 
-  /** Get a product by its slug */
-  getBySlug(slug: string): Product | undefined {
-    return this.productsState().find(p => p.slug === slug);
-  }
+  /**
+   * Productos visibles públicamente — única fuente de verdad para la regla de
+   * visibilidad: solo status === 'activo'. Toda ruta pública (shop, categoría,
+   * detalle, home) debe derivar de este computed, nunca de productsState.
+   * El admin NO usa este acceso; sigue operando sobre la lista completa.
+   */
+  readonly publicProducts = computed(() =>
+    this.productsState().filter(p => p.status === 'activo')
+  );
 
-  /** Get a product by its ID */
-  getById(id: number): Product | undefined {
-    return this.productsState().find(p => p.id === id);
-  }
+  /** Productos de la sección "Destacados" del Home (solo activos, vía publicProducts). */
+  readonly featuredProducts = computed(() =>
+    this.publicProducts()
+      .filter(p => p.featuredImage?.trim() && p.featuredSection === 'destacados')
+      .slice(0, 8) // max 8 products
+  );
 
-  /** Get products by category ID */
-  getByCategoryId(categoryId: number): Product[] {
-    return this.productsState().filter(p => p.categoryId === categoryId);
-  }
-
-  /** Productos de la sección "Destacados" del Home (requieren featuredImage + featuredSection). */
-  readonly featuredProducts = computed(() => {
-    const products = this.productsState();
-    return products
-      .filter(p =>
-        p.featuredImage &&
-        p.featuredImage.trim().length > 0 &&
-        p.featuredSection === 'destacados'
-      )
-      .slice(0, 8); // max 8 products
-  });
-
-  /** Productos de la sección "Nuevos" del Home (requieren featuredImage + featuredSection). */
+  /** Productos de la sección "Nuevos" del Home (solo activos, vía publicProducts). */
   readonly newProducts = computed(() =>
-    this.productsState().filter(
-      p =>
-        p.featuredImage &&
-        p.featuredImage.trim().length > 0 &&
-        p.featuredSection === 'nuevos' &&
-        p.status === 'activo'
+    this.publicProducts().filter(
+      p => p.featuredImage?.trim() && p.featuredSection === 'nuevos'
     )
   );
 
