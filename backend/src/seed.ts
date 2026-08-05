@@ -5,6 +5,12 @@
  *
  * Es IDEMPOTENTE: solo inserta registros que NO existen en Neon.
  * Los productos que ya existen (migrados vía admin/Gemini) no se duplican.
+ *
+ * NOTA: shared/data/products.json fue eliminado del repo — Neon es la fuente de
+ * verdad y ya está poblado (81 productos). readJson tolera la ausencia del
+ * archivo (devuelve []), así que este seed queda efectivamente como bootstrap
+ * de categorías; si en el futuro se vuelve a añadir products.json, el seed de
+ * productos vuelve a funcionar sin cambios.
  */
 import { config } from 'dotenv';
 config();

@@ -18,9 +18,12 @@
  *      no surtiría efecto.
  *   4. NO toca nombre, precios, score, ratings, status ni asigna secciones.
  *
- * Procesa frontend/src/app/core/data/products.json (fuente del build/admin) y
- * backend/shared/data/products.json (fuente del seed de Neon) para que todo el
- * catálogo quede consistente.
+ * Procesa frontend/src/app/core/data/products.json (fuente del build/admin) para
+ * que todo el catálogo quede consistente.
+ *
+ * NOTA: backend/shared/data/products.json fue eliminado del repo (Neon es la
+ * fuente de verdad y ya está poblado). Este script ya solo normaliza el JSON
+ * del frontend.
  *
  * Uso: node utilities/seed-featured.mjs
  */
@@ -33,7 +36,6 @@ const ROOT = join(__dirname, '..');
 
 const TARGETS = [
   join(ROOT, 'src', 'app', 'core', 'data', 'products.json'),
-  join(ROOT, '..', 'backend', 'shared', 'data', 'products.json'),
 ];
 
 function normalize(path) {
