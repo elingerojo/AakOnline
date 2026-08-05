@@ -13,8 +13,21 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
   imports: [FormsModule, ProductPreviewComponent],
   template: `
     <form (ngSubmit)="onSubmit()" (input)="onFormInput($event)" (change)="onFormInput($event)" class="space-y-6">
-      <!-- Top actions: Vista previa + Guardar -->
+      <!-- Top actions: Generar con Gemini + Vista previa + Guardar -->
       <div class="flex items-center gap-3 pb-4 border-b border-gray-200 dark:border-gray-700">
+        <button type="button"
+                (click)="generateWithGemini()"
+                [disabled]="isGenerating() || !formState.image"
+                class="px-4 py-2 bg-gradient-to-r from-purple-600 to-amber-500
+                       text-white text-sm font-medium rounded-lg hover:opacity-90
+                       disabled:opacity-50 disabled:cursor-not-allowed
+                       transition-all cursor-pointer">
+          @if (isGenerating()) {
+            ⏳ Generando...
+          } @else {
+            ✨ Generar con Gemini
+          }
+        </button>
         <button type="button" (click)="openPreview()"
                 class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg
                        hover:bg-blue-700 transition-colors cursor-pointer">
@@ -344,24 +357,9 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
 
         <!-- Gemini AI Generator -->
         <div class="md:col-span-2 border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
-          <div class="flex items-center gap-3">
-            <button type="button"
-                    (click)="generateWithGemini()"
-                    [disabled]="isGenerating() || !formState.image"
-                    class="px-4 py-2 bg-gradient-to-r from-purple-600 to-amber-500
-                           text-white font-medium rounded-lg hover:opacity-90
-                           disabled:opacity-50 disabled:cursor-not-allowed
-                           transition-all cursor-pointer">
-              @if (isGenerating()) {
-                ⏳ Generando...
-              } @else {
-                ✨ Generar con Gemini
-              }
-            </button>
-            @if (isGenerating()) {
-              <span class="text-sm text-gray-500">Analizando imagen con IA...</span>
-            }
-          </div>
+          @if (isGenerating()) {
+            <span class="text-sm text-gray-500">Analizando imagen con IA...</span>
+          }
           @if (geminiError()) {
             <div class="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800
                         rounded-lg text-sm text-red-700 dark:text-red-300">
@@ -401,6 +399,19 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
 
       <!-- Actions -->
       <div class="flex items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <button type="button"
+                (click)="generateWithGemini()"
+                [disabled]="isGenerating() || !formState.image"
+                class="px-4 py-2 bg-gradient-to-r from-purple-600 to-amber-500
+                       text-white font-medium rounded-lg hover:opacity-90
+                       disabled:opacity-50 disabled:cursor-not-allowed
+                       transition-all cursor-pointer">
+          @if (isGenerating()) {
+            ⏳ Generando...
+          } @else {
+            ✨ Generar con Gemini
+          }
+        </button>
         <button type="button" (click)="openPreview()"
                 class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg
                        hover:bg-blue-700 transition-colors cursor-pointer">
