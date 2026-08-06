@@ -36,7 +36,7 @@ import { CONTACT_CONFIG } from '../../core/data/contact.config';
     </div>
 
     <!-- Desktop: Floating side button -->
-    <div class="hidden lg:block fixed right-4 top-1/2 -translate-y-1/2 z-40">
+    <div class="hidden lg:block fixed right-0 top-1/2 -translate-y-1/2 z-40">
       <a [href]="'https://wa.me/' + config.whatsapp.number + '?text=' + encodeURIComponent(config.whatsapp.message)"
          target="_blank" rel="noopener"
          class="flex items-center gap-2 bg-green-500 text-white px-4 py-3 rounded-l-lg shadow-lg
