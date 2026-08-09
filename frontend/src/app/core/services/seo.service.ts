@@ -10,7 +10,7 @@ export interface SeoConfig {
 }
 
 const DEFAULT_CONFIG: SeoConfig = {
-  title: 'Aak Artesanías — Muebles Artesanales Mexicanos',
+  title: 'AakBejuco — Muebles Artesanales Mexicanos',
   description:
     'Descubra muebles artesanales mexicanos hechos a mano. Calidad, diseño e innovación en piezas únicas para el hogar.',
   image: 'assets/img/Logo_Aak_para-App-01.png',

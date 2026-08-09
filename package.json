@@ -2,7 +2,7 @@
   "name": "aakonline",
   "version": "0.1.0",
   "private": true,
-  "description": "Aak Artesanías — Monorepo: frontend (Angular/Vercel) + backend (Express/Railway)",
+  "description": "AakBejuco — Monorepo: frontend (Angular/Vercel) + backend (Express/Railway)",
   "scripts": {
     "dev:backend": "npm run dev -w backend",
     "dev:frontend": "npm run start -w frontend",

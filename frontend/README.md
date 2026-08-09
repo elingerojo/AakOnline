@@ -1,4 +1,4 @@
-# Aak Artesanías v1
+# AakBejuco v1
 
 Aplicación web Angular 22 para catálogo de muebles artesanales mexicanos. Cliente para la API de administración de contenidos, con catálogo público, cotizaciones y generación de PDF.
 
@@ -139,4 +139,4 @@ Cada componente de página (home, shop, category, product-detail, quote, shippin
 
 ## Licencia
 
-Uso interno — Aak Artesanías
+Uso interno — AakBejuco

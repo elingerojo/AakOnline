@@ -284,7 +284,7 @@ export class PdfService {
     pdf.setTextColor('#FFFFFF');
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(9);
-    pdf.text('Gracias por elegir Aak Artesanias.', 20, pageHeight - 6);
+    pdf.text('Gracias por elegir AakBejuco.', 20, pageHeight - 6);
     pdf.text('Pagina 1', pageWidth - 20, pageHeight - 6, { align: 'right' });
   }
 

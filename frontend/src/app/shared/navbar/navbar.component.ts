@@ -20,7 +20,7 @@ import { ThemeSwitcherComponent } from '../theme-switcher/theme-switcher.compone
         <div class="flex items-center justify-between gap-x-2 sm:gap-x-6 max-w-[1720px] mx-auto relative py-[10px] sm:py-4 lg:py-0">
 
           <!-- Logo -->
-          <a routerLink="/" class="cursor-pointer block min-w-0" aria-label="Aak Artesanias">
+          <a routerLink="/" class="cursor-pointer block min-w-0" aria-label="AakBejuco">
             <!-- Imagen para Modo Claro -->
             <img src="assets/img/Logo_mini_Aak_para-App-02.png" alt="Logo" class="sm:w-[140px] block dark:hidden" />
             <!-- Imagen para Modo Oscuro -->

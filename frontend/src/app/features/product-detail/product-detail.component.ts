@@ -185,7 +185,7 @@ export class ProductDetailComponent implements OnInit {
     const prod = this.product();
     if (prod) {
       this.seoService.setPageSeo({
-        title: `${prod.name ?? 'Producto'} — Aak Artesanías`,
+        title: `${prod.name ?? 'Producto'} — AakBejuco`,
         description: prod.shortDescription || `${prod.name ?? 'Producto artesanal'} hecho a mano en México.`,
         image: prod.image || undefined,
         type: 'product',

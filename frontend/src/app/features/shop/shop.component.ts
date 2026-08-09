@@ -65,7 +65,7 @@ export class ShopComponent implements OnInit {
   ngOnInit(): void {
     AOS.init({ delay: 0, duration: 600, easing: 'ease-out', once: true });
     this.seoService.setPageSeo({
-      title: 'Tienda — Aak Artesanías',
+      title: 'Tienda — AakBejuco',
       description: 'Explore nuestra colección completa de muebles artesanales mexicanos hechos a mano.',
     });
   }

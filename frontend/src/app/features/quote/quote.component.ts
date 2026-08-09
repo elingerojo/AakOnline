@@ -214,7 +214,7 @@ export class QuoteComponent implements OnInit {
   ngOnInit(): void {
     AOS.init({ delay: 0, duration: 600, easing: 'ease-out', once: true });
     this.seoService.setPageSeo({
-      title: 'Cotización — Aak Artesanías',
+      title: 'Cotización — AakBejuco',
       description: 'Revise y descargue su cotización de muebles artesanales mexicanos.',
     });
   }

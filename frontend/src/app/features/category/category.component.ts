@@ -88,7 +88,7 @@ export class CategoryComponent implements OnInit {
     const cat = this.category();
     if (cat) {
       this.seoService.setPageSeo({
-        title: `${cat.name} — Aak Artesanías`,
+        title: `${cat.name} — AakBejuco`,
         description: `Explore nuestra colección de ${cat.name} artesanales hechos a mano. ${cat.models} modelos disponibles.`,
       });
     }

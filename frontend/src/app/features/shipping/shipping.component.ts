@@ -94,7 +94,7 @@ export class ShippingComponent implements OnInit {
   ngOnInit(): void {
     AOS.init({ delay: 0, duration: 600, easing: 'ease-out', once: true });
     this.seoService.setPageSeo({
-      title: 'Métodos de Envío — Aak Artesanías',
+      title: 'Métodos de Envío — AakBejuco',
       description: 'Información sobre nuestros métodos de envío, empaque especializado y cobertura regional para muebles artesanales.',
     });
   }

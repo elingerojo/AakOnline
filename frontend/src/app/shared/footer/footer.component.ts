@@ -12,9 +12,9 @@ import { CONTACT_CONFIG } from '../../core/data/contact.config';
       <div class="relative z-10 max-w-7xl mx-auto px-4 py-12">
         <!-- Brand & Description -->
         <div class="flex flex-col items-center text-center mb-10">
-          <img src="assets/img/Logo_mini_Aak_para-App-02.png" alt="Aak Artesanias" class="w-[150px] sm:w-auto mb-4 brightness-0 invert" />
+          <img src="assets/img/Logo_mini_Aak_para-App-02.png" alt="AakBejuco" class="w-[150px] sm:w-auto mb-4 brightness-0 invert" />
           <p class="text-sm text-gray-300 max-w-[522px] leading-relaxed">
-            Aak Artesan&iacute;as en una tienda moderna con productos artesanales directos de los mismos artesanos que los elaboran siguiendo el oficio aprendido a trav&eacute;s de generaciones. Nos enorgullecemos de ofrecer &uacute;nicamente acabados y procesos de alta calidad realizados totalmente a mano.
+            AakBejuco en una tienda moderna con productos artesanales directos de los mismos artesanos que los elaboran siguiendo el oficio aprendido a trav&eacute;s de generaciones. Nos enorgullecemos de ofrecer &uacute;nicamente acabados y procesos de alta calidad realizados totalmente a mano.
           </p>
         </div>
 
@@ -80,7 +80,7 @@ import { CONTACT_CONFIG } from '../../core/data/contact.config';
         <!-- Copyright -->
         <div class="mt-10 pt-6 border-t border-white/10 text-center">
           <p class="text-sm text-white/60">
-            &copy; {{ currentYear }} Aak Artesan&iacute;as. Todos los derechos reservados.
+            &copy; {{ currentYear }} AakBejuco. Todos los derechos reservados.
           </p>
         </div>
       </div>

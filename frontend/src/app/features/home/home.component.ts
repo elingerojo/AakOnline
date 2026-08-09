@@ -188,7 +188,7 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.seoService.setPageSeo({
-      title: 'Aak Artesanías — Muebles Artesanales Mexicanos',
+      title: 'AakBejuco — Muebles Artesanales Mexicanos',
       description:
         'Descubra muebles artesanales mexicanos hechos a mano. Calidad, diseño e innovación en piezas únicas para el hogar.',
     });
