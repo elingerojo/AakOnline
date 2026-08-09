@@ -1,5 +1,5 @@
 import express from 'express';
-import cors from 'cors';
+// import cors from 'cors';
 import { config } from 'dotenv';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -21,7 +21,7 @@ const PORT = process.env.PORT ?? 3000;
 const app = express();
 
 // Middleware
-app.use(cors());
+// app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
 // Routes
