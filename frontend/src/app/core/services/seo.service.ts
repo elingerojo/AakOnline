@@ -14,7 +14,7 @@ const DEFAULT_CONFIG: SeoConfig = {
   description:
     'Descubra muebles artesanales mexicanos hechos a mano. Calidad, diseño e innovación en piezas únicas para el hogar.',
   image: 'assets/img/Logo_Aak_para-App-01.png',
-  url: 'https://aak-artesanias.vercel.app',
+  url: 'https://aakbejuco.com',
   type: 'website',
 };
 
