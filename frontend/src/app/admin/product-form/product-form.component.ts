@@ -1,6 +1,7 @@
 import { Component, inject, input, output, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AdminApiService } from '../../core/services/admin-api.service';
+import { CategoryService } from '../../core/services/category.service';
 import { ProductService } from '../../core/services/product.service';
 import { ProductPreviewComponent } from '../product-preview/product-preview.component';
 import type { Product, ProductStatus, FeaturedSection } from '@shared/models/product.model';
@@ -94,7 +95,7 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
                          bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
             <option value="" disabled>Seleccionar categoria...</option>
             @for (cat of categories(); track cat.id) {
-              <option [value]="cat.id">{{ cat.name }}</option>
+              <option [ngValue]="cat.id">{{ cat.name }}</option>
             }
           </select>
         </div>
@@ -469,6 +470,7 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
 })
 export class ProductFormComponent implements OnInit {
   private adminApi = inject(AdminApiService);
+  private categoryService = inject(CategoryService);
   private productService = inject(ProductService);
 
   readonly editingProduct = input<Product | null>(null);
@@ -528,9 +530,11 @@ export class ProductFormComponent implements OnInit {
   private async loadCategories(): Promise<void> {
     try {
       const cats = await this.adminApi.getCategories();
-      this.categories.set(cats);
+      // Fallback a las categorías locales si la API remota devuelve vacío
+      this.categories.set(cats.length > 0 ? cats : this.categoryService.categories());
     } catch (err) {
-      console.error('Failed to load categories:', err);
+      console.error('Failed to load categories, using local fallback:', err);
+      this.categories.set(this.categoryService.categories());
     }
   }
 
