@@ -243,6 +243,9 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
             @if (isUploadingGallery()) {
               <span class="text-sm text-gray-500">Subiendo...</span>
             }
+            @if (uploadGalleryError()) {
+              <span class="text-sm text-red-500">{{ uploadGalleryError() }}</span>
+            }
           </div>
 
           @if (formState.imageList.length > 0) {
@@ -493,6 +496,7 @@ export class ProductFormComponent implements OnInit {
   protected saveError = signal('');
   protected geminiError = signal('');
   protected uploadError = signal('');
+  protected uploadGalleryError = signal('');
   protected saveSuccess = signal(false);
 
   // Vista previa + resaltado de completitud / Gemini
@@ -811,7 +815,7 @@ export class ProductFormComponent implements OnInit {
       this.markDirty('image');
       this.syncFeaturedImage();
     } catch (err) {
-      this.uploadError.set('Error al subir imagen');
+      this.uploadError.set(`Error al subir imagen: ${err instanceof Error ? err.message : 'Error desconocido'}`);
       console.error('Upload failed:', err);
     } finally {
       this.isUploading.set(false);
@@ -825,11 +829,15 @@ export class ProductFormComponent implements OnInit {
     if (!file) return;
 
     this.isUploadingGallery.set(true);
+    this.uploadGalleryError.set('');
 
     try {
       const result = await this.adminApi.uploadImage(file);
       this.formState.imageList = [...this.formState.imageList, result.url];
     } catch (err) {
+      this.uploadGalleryError.set(
+        `Error al subir imagen de galería: ${err instanceof Error ? err.message : 'Error desconocido'}`
+      );
       console.error('Gallery upload failed:', err);
     } finally {
       this.isUploadingGallery.set(false);

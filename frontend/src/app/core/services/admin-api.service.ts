@@ -175,7 +175,16 @@ export class AdminApiService {
       method: 'POST',
       body: formData,
     });
-    if (!res.ok) throw new Error(`Failed to upload image: ${res.status}`);
+    if (!res.ok) {
+      let message = `Failed to upload image: ${res.status}`;
+      try {
+        const errBody = await res.json();
+        if (errBody?.error) message = `${message} — ${errBody.error}`;
+      } catch {
+        // Sin cuerpo JSON: se deja el mensaje por defecto
+      }
+      throw new Error(message);
+    }
     return res.json();
   }
 }
