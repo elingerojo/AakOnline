@@ -12,6 +12,22 @@
       "destination": "https://aakonline-production.up.railway.app/api/:path*"
     },
     {
+      "source": "/shop",
+      "destination": "/shop/index.html"
+    },
+    {
+      "source": "/shipping",
+      "destination": "/shipping/index.html"
+    },
+    {
+      "source": "/category/:slug",
+      "destination": "/category/:slug/index.html"
+    },
+    {
+      "source": "/product/:slug",
+      "destination": "/product/:slug/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

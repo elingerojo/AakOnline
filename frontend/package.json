@@ -6,6 +6,7 @@
     "start": "ng serve",
     "prebuild": "node utilities/prebuild.mjs",
     "build": "ng build",
+    "postbuild": "node utilities/generate-seo.mjs",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "i18n:extract": "ng extract-i18n --output-path src/locale"
