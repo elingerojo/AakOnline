@@ -21,7 +21,7 @@ import type { Product } from '@shared/models/product.model';
           </div>
           <div class="flex items-center gap-4">
             <app-admin-nav />
-            <button (click)="showForm.set(true)"
+            <button (click)="openForm()"
                     class="px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors cursor-pointer">
               + Nuevo producto
             </button>
@@ -98,6 +98,12 @@ export class CatalogWorkspaceComponent implements OnInit {
     return remoteNamed >= localNamed;
   }
 
+  /** Muestra el formulario y hace scroll al tope para que quede visible. */
+  openForm(): void {
+    this.showForm.set(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   closeForm(): void {
     this.showForm.set(false);
     this.editingProduct.set(null);
@@ -109,6 +115,6 @@ export class CatalogWorkspaceComponent implements OnInit {
 
   onEditProduct(product: Product): void {
     this.editingProduct.set(product);
-    this.showForm.set(true);
+    this.openForm();
   }
 }
