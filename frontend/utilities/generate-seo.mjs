@@ -6,7 +6,7 @@
  * se generan sobre el `index.html` ya compilado de
  * dist/AakArtesanias/browser/es.
  *
- * Alcance de la Etapa 1 (solo meta tags — JSON-LD, sitemap y robots van en Etapa 2):
+ * Alcance (meta tags por ruta + sitemap.xml + robots.txt):
  *   - /                  home (index.html base, normalizado)
  *   - /shop              → shop/index.html
  *   - /shipping          → shipping/index.html
@@ -30,7 +30,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 
 const SITE_URL = (process.env.AAK_SITE_URL ?? 'https://aakbejuco.com').replace(/\/+$/, '');
-const DIST_DIR = join(root, 'dist', 'AakArtesanias', 'browser', 'es');
+const BROWSER_DIR = join(root, 'dist', 'AakArtesanias', 'browser');
+const DIST_DIR = join(BROWSER_DIR, 'es');
 const INDEX_PATH = join(DIST_DIR, 'index.html');
 const PRODUCTS_PATH = join(root, 'src', 'app', 'core', 'data', 'products.json');
 const CATEGORIES_PATH = join(root, 'src', 'app', 'core', 'data', 'categories.json');
@@ -54,10 +55,10 @@ function readJson(path, fallback = []) {
 
 function escAttr(value) {
   return String(value ?? '')
-    .replace(/&/g, '&')
-    .replace(/"/g, '"')
-    .replace(/</g, '<')
-    .replace(/>/g, '>');
+    .replace(/&/g, '&' + 'amp;')
+    .replace(/"/g, '&' + 'quot;')
+    .replace(/</g, '&' + 'lt;')
+    .replace(/>/g, '&' + 'gt;');
 }
 
 function cleanText(value) {
@@ -75,6 +76,76 @@ function truncate(value, max) {
 function absolutize(url) {
   if (/^https?:\/\//i.test(url ?? '')) return url;
   return `${SITE_URL}/${String(url ?? '').replace(/^\//, '')}`;
+}
+
+/** Escapa texto para nodos y atributos XML. */
+function xmlEscape(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&' + 'amp;')
+    .replace(/</g, '&' + 'lt;')
+    .replace(/>/g, '&' + 'gt;')
+    .replace(/"/g, '&' + 'quot;')
+    .replace(/'/g, '&' + 'apos;');
+}
+
+/** Devuelve YYYY-MM-DD (UTC) desde updatedAt/createdAt, o null si no existe. */
+function toLastmod(record) {
+  const raw = record?.updatedAt ?? record?.createdAt;
+  if (!raw) return null;
+  const date = new Date(raw);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 10);
+}
+
+/** Escribe un archivo en DIST_DIR y, si es distinto, también en la raíz browser/. */
+function writeBuildFile(filename, content) {
+  const targets = new Set([DIST_DIR]);
+  if (existsSync(BROWSER_DIR) && BROWSER_DIR !== DIST_DIR) targets.add(BROWSER_DIR);
+  for (const dir of targets) {
+    writeFileSync(join(dir, filename), content);
+  }
+}
+
+/** Genera sitemap.xml: home, shop, shipping, categorías y productos activos. */
+function writeSitemap(activeProducts, activeCategories) {
+  const entries = [
+    { loc: `${SITE_URL}/`, priority: '1.0' },
+    { loc: `${SITE_URL}/shop`, priority: '0.8' },
+    { loc: `${SITE_URL}/shipping`, priority: '0.5' },
+  ];
+
+  for (const cat of activeCategories) {
+    entries.push({ loc: `${SITE_URL}/category/${cat.slug}`, priority: '0.8', lastmod: toLastmod(cat) });
+  }
+
+  for (const prod of activeProducts) {
+    entries.push({ loc: `${SITE_URL}/product/${prod.slug}`, priority: '0.7', lastmod: toLastmod(prod) });
+  }
+
+  const body = entries
+    .map(({ loc, priority, lastmod }) => {
+      const lines = [`    <loc>${xmlEscape(loc)}</loc>`];
+      if (lastmod) lines.push(`    <lastmod>${lastmod}</lastmod>`);
+      lines.push(`    <priority>${priority}</priority>`);
+      return `  <url>\n${lines.join('\n')}\n  </url>`;
+    })
+    .join('\n');
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`;
+  writeBuildFile('sitemap.xml', xml);
+  return entries.length;
+}
+
+/** Genera robots.txt bloqueando /admin y apuntando al sitemap. */
+function writeRobots() {
+  const txt = [
+    'User-agent: *',
+    'Allow: /',
+    'Disallow: /admin',
+    '',
+    `Sitemap: ${SITE_URL}/sitemap.xml`,
+    '',
+  ].join('\n');
+  writeBuildFile('robots.txt', txt);
 }
 
 /** Reemplaza la primera ocurrencia del patrón; si no existe, inserta antes de </head>. */
@@ -267,6 +338,9 @@ function main() {
     );
     count += 1;
   }
+
+  writeSitemap(activeProducts, activeCategories);
+  writeRobots();
 
   console.log(
     `[generate-seo] ✅ Etapa 1 completada: ${count} páginas (${activeProducts.length} productos activos, ${activeCategories.length} categorías con productos).`
