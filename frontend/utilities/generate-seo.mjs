@@ -339,11 +339,11 @@ function main() {
     count += 1;
   }
 
-  writeSitemap(activeProducts, activeCategories);
+  const sitemapUrls = writeSitemap(activeProducts, activeCategories);
   writeRobots();
 
   console.log(
-    `[generate-seo] ✅ Etapa 1 completada: ${count} páginas (${activeProducts.length} productos activos, ${activeCategories.length} categorías con productos).`
+    `[generate-seo] ✅ Etapa 1 completada: ${count} páginas (${activeProducts.length} productos activos, ${activeCategories.length} categorías con productos) | sitemap: ${sitemapUrls} urls.`
   );
 }
 
