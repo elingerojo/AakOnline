@@ -68,13 +68,24 @@ interface FunnelStep {
               </button>
             }
           </div>
-          <p class="text-xs text-gray-500 dark:text-gray-400">
-            Zona horaria <span class="font-medium text-gray-700 dark:text-gray-200">America/Mexico_City</span>
-            @if (summary(); as s) {
-              · {{ s.range.from }} → {{ s.range.to }}
-              · generado {{ generatedLabel() }}
+          <div class="flex items-center gap-3 flex-wrap">
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              Zona horaria <span class="font-medium text-gray-700 dark:text-gray-200">America/Mexico_City</span>
+              @if (summary(); as s) {
+                · {{ s.range.from }} → {{ s.range.to }}
+                · generado {{ generatedLabel() }}
+              }
+            </p>
+            @if (summary()) {
+              <button type="button" (click)="exportCsv()" [disabled]="loading()"
+                      aria-label="Descargar métricas del periodo en CSV"
+                      class="px-3 py-1.5 text-sm font-medium rounded-lg border border-amber-600 text-amber-700
+                             dark:text-amber-300 dark:border-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20
+                             disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors">
+                Descargar CSV
+              </button>
             }
-          </p>
+          </div>
         </div>
 
         @if (loading()) {
@@ -420,6 +431,68 @@ export class MetricsComponent implements OnInit {
   protected funnelWidth(percent: number | null): number {
     if (percent == null || percent <= 0) return 0;
     return Math.min(100, Math.max(2, percent));
+  }
+
+  /**
+   * Exporta el resumen a CSV en el navegador (Blob + Object URL).
+   * Incluye la serie diaria y las secciones de top productos/categorías/eventos.
+   */
+  protected exportCsv(): void {
+    const summary = this.summary();
+    if (!summary) return;
+
+    try {
+      const rows: string[] = ['date,pageViews,visitors'];
+      for (const day of this.trend()) {
+        rows.push(`${day.date},${day.pageViews},${day.visitors}`);
+      }
+
+      rows.push('', 'topProductId,productName,views');
+      for (const product of summary.topProducts ?? []) {
+        rows.push(
+          `${product.productId},${this.csvField(this.productName(product.productId))},${product.views}`
+        );
+      }
+
+      rows.push('', 'topCategoryId,categoryName,views');
+      for (const category of summary.topCategories ?? []) {
+        rows.push(
+          `${category.categoryId},${this.csvField(this.categoryName(category.categoryId))},${category.views}`
+        );
+      }
+
+      rows.push('', 'event,count');
+      for (const event of summary.events ?? []) {
+        rows.push(`${event.type},${event.count}`);
+      }
+
+      // BOM para que Excel detecte UTF-8 (acentos y eñes).
+      const blob = new Blob([`\ufeff${rows.join('\r\n')}\r\n`], {
+        type: 'text/csv;charset=utf-8;',
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `metricas-${summary.range.days}d-${this.todayIso()}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch {
+      // La exportación nunca debe romper el panel.
+    }
+  }
+
+  private csvField(value: string): string {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+
+  private todayIso(): string {
+    try {
+      return new Intl.DateTimeFormat('en-CA', { timeZone: TIMEZONE }).format(new Date());
+    } catch {
+      return new Date().toISOString().slice(0, 10);
+    }
   }
 
   private async load(): Promise<void> {
