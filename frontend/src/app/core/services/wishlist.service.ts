@@ -1,9 +1,11 @@
-import { Injectable, signal, computed, effect } from '@angular/core';
+import { Injectable, signal, computed, effect, inject } from '@angular/core';
+import { AnalyticsService } from './analytics.service';
 
 const STORAGE_KEY = 'aak_wishlist';
 
 @Injectable({ providedIn: 'root' })
 export class WishlistService {
+  private analytics = inject(AnalyticsService);
   private itemsSignal = signal<number[]>(this.loadFromStorage());
 
   /** Array of product IDs in the wishlist */
@@ -20,11 +22,15 @@ export class WishlistService {
 
   /** Toggle a product in the wishlist (add if not present, remove if present) */
   toggle(productId: number): void {
+    const isAdding = !this.has(productId);
+
     this.itemsSignal.update(items =>
       items.includes(productId)
         ? items.filter(id => id !== productId)
         : [...items, productId]
     );
+
+    if (isAdding) this.analytics.track('wishlist_add', { productId });
   }
 
   /** Check if a product is in the wishlist */
@@ -36,6 +42,7 @@ export class WishlistService {
   add(productId: number): void {
     if (!this.has(productId)) {
       this.itemsSignal.update(items => [...items, productId]);
+      this.analytics.track('wishlist_add', { productId });
     }
   }
 

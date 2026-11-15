@@ -1,6 +1,7 @@
 import { Component, inject, input, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ShippingService } from '../../core/services/shipping.service';
+import { AnalyticsService } from '../../core/services/analytics.service';
 import { formatCurrency } from '../../core/utils/text-utils';
 
 @Component({
@@ -75,6 +76,7 @@ import { formatCurrency } from '../../core/utils/text-utils';
 })
 export class ShippingCalculatorComponent {
   private shippingService = inject(ShippingService);
+  private analytics = inject(AnalyticsService);
 
   readonly categoryId = input.required<number>();
   readonly onCostCalculated = input<(cost: number) => void>();
@@ -101,6 +103,12 @@ export class ShippingCalculatorComponent {
       unitCount
     );
     this.estimatedCost.set(cost);
+
+    this.analytics.track('shipping_calc', {
+      categoryId: this.categoryId(),
+      value: cost,
+      meta: { units: unitCount },
+    });
 
     const callback = this.onCostCalculated();
     if (callback) {

@@ -1,10 +1,12 @@
-import { Injectable, signal, computed, effect } from '@angular/core';
+import { Injectable, signal, computed, effect, inject } from '@angular/core';
 import type { QuoteItem, QuoteSummary } from '@shared/models/quote.model';
+import { AnalyticsService } from './analytics.service';
 
 const STORAGE_KEY = 'aak_quote_items';
 
 @Injectable({ providedIn: 'root' })
 export class QuoteService {
+  private analytics = inject(AnalyticsService);
   private itemsSignal = signal<QuoteItem[]>(this.loadFromStorage());
 
   /** Current quote items */
@@ -76,6 +78,12 @@ export class QuoteService {
         return [...items.slice(0, idx), merged, ...items.slice(idx + 1)];
       }
       return [...items, item];
+    });
+
+    // Fire-and-forget: la cotización nunca depende de las métricas.
+    this.analytics.track('add_to_quote', {
+      productId: item.productId,
+      value: item.qty,
     });
   }
 

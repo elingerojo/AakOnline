@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import * as AOS from 'aos';
 import { QuoteService } from '../../core/services/quote.service';
 import { SeoService } from '../../core/services/seo.service';
+import { AnalyticsService } from '../../core/services/analytics.service';
 import { PdfService } from '../../core/services/pdf.service';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import { FooterComponent } from '../../shared/footer/footer.component';
@@ -206,6 +207,7 @@ export class QuoteComponent implements OnInit {
   protected quoteService = inject(QuoteService);
   private pdfService = inject(PdfService);
   private seoService = inject(SeoService);
+  private analytics = inject(AnalyticsService);
 
   protected isDownloading = signal(false);
   protected isPreviewing = signal(false);
@@ -216,6 +218,11 @@ export class QuoteComponent implements OnInit {
     this.seoService.setPageSeo({
       title: 'Cotización — AakBejuco',
       description: 'Revise y descargue su cotización de muebles artesanales mexicanos.',
+    });
+
+    this.analytics.track('quote_open', {
+      path: '/quote',
+      value: this.quoteService.items().length,
     });
   }
 

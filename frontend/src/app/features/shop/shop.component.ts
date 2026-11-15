@@ -1,5 +1,6 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { SeoService } from '../../core/services/seo.service';
+import { AnalyticsService } from '../../core/services/analytics.service';
 import * as AOS from 'aos';
 import { ProductService } from '../../core/services/product.service';
 import { ProductCardComponent } from '../../shared/product-card/product-card.component';
@@ -32,6 +33,20 @@ import { ContactBarComponent } from '../../shared/contact-bar/contact-bar.compon
           <p class="text-gray-600 dark:text-gray-300 mt-2" data-aos="fade-up" data-aos-delay="100">
             Explora nuestra coleccion de muebles artesanales
           </p>
+
+          <!-- Buscador -->
+          <div class="mt-6 max-w-md" data-aos="fade-up" data-aos-delay="150">
+            <input
+              type="search"
+              [value]="searchTerm()"
+              (input)="onSearchInput($event)"
+              placeholder="Buscar productos..."
+              aria-label="Buscar productos"
+              class="w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600
+                     bg-white dark:bg-gray-900 text-gray-900 dark:text-white
+                     placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            />
+          </div>
         </div>
       </section>
 
@@ -57,10 +72,26 @@ import { ContactBarComponent } from '../../shared/contact-bar/contact-bar.compon
     <app-scroll-to-top />
   `,
 })
-export class ShopComponent implements OnInit {
+export class ShopComponent implements OnInit, OnDestroy {
   private productService = inject(ProductService);
   private seoService = inject(SeoService);
-  protected products = this.productService.publicProducts;
+  private analytics = inject(AnalyticsService);
+
+  protected readonly searchTerm = signal('');
+  private searchTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /** Catálogo filtrado por el buscador (nombre o etiquetas). */
+  protected readonly products = computed(() => {
+    const term = this.searchTerm().trim().toLowerCase();
+    const all = this.productService.publicProducts();
+    if (!term) return all;
+
+    return all.filter(
+      (product) =>
+        (product.name ?? '').toLowerCase().includes(term) ||
+        (product.tags ?? []).some((tag) => String(tag).toLowerCase().includes(term))
+    );
+  });
 
   ngOnInit(): void {
     AOS.init({ delay: 0, duration: 600, easing: 'ease-out', once: true });
@@ -68,5 +99,31 @@ export class ShopComponent implements OnInit {
       title: 'Tienda — AakBejuco',
       description: 'Explore nuestra colección completa de muebles artesanales mexicanos hechos a mano.',
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.searchTimer !== null) clearTimeout(this.searchTimer);
+    this.searchTimer = null;
+  }
+
+  /**
+   * Registra la búsqueda solo si tiene 3+ caracteres y se trunca a 50.
+   * Con debounce para no enviar un evento por tecla.
+   */
+  protected onSearchInput(event: Event): void {
+    const value = (event.target as HTMLInputElement).value ?? '';
+    this.searchTerm.set(value);
+
+    if (this.searchTimer !== null) clearTimeout(this.searchTimer);
+
+    const term = value.trim();
+    if (term.length < 3) return;
+
+    this.searchTimer = setTimeout(() => {
+      this.analytics.track('search', {
+        path: '/shop',
+        meta: { q: term.slice(0, 50) },
+      });
+    }, 800);
   }
 }

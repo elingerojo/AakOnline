@@ -1,12 +1,14 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { QuoteSummary } from '@shared/models/quote.model';
 import { formatCurrency } from '../utils/text-utils';
 import { CONTACT_CONFIG } from '../data/contact.config';
+import { AnalyticsService } from './analytics.service';
 
 @Injectable({ providedIn: 'root' })
 export class PdfService {
+  private analytics = inject(AnalyticsService);
   // Corporate palette (Verde Naturaleza y Gris Elegante)
   private readonly COLOR_PRIMARIO = '#1b9b4d'; // Vibrant green
   private readonly COLOR_SECUNDARIO = '#115e2e'; // Dark green for contrasts
@@ -302,6 +304,8 @@ export class PdfService {
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+
+    this.analytics.track('pdf_download', { value: summary.items.length });
   }
 
   /**

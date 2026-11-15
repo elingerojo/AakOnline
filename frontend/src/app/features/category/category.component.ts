@@ -1,6 +1,7 @@
 import { Component, inject, computed, OnInit } from '@angular/core';
 import { input } from '@angular/core';
 import { SeoService } from '../../core/services/seo.service';
+import { AnalyticsService } from '../../core/services/analytics.service';
 import { CategoryService } from '../../core/services/category.service';
 import { ProductService } from '../../core/services/product.service';
 import { ProductCardComponent } from '../../shared/product-card/product-card.component';
@@ -66,6 +67,7 @@ export class CategoryComponent implements OnInit {
   private categoryService = inject(CategoryService);
   private productService = inject(ProductService);
   private seoService = inject(SeoService);
+  private analytics = inject(AnalyticsService);
 
   /** Route param 'slug' auto-bound via withComponentInputBinding */
   protected readonly slug = input('', { alias: 'slug' });
@@ -90,6 +92,11 @@ export class CategoryComponent implements OnInit {
       this.seoService.setPageSeo({
         title: `${cat.name} — AakBejuco`,
         description: `Explore nuestra colección de ${cat.name} artesanales hechos a mano. ${cat.models} modelos disponibles.`,
+      });
+
+      this.analytics.track('category_view', {
+        path: `/category/${cat.slug}`,
+        categoryId: cat.id,
       });
     }
   }

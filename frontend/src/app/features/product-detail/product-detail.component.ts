@@ -5,6 +5,7 @@ import { ProductService } from '../../core/services/product.service';
 import { CategoryService } from '../../core/services/category.service';
 import { QuoteService } from '../../core/services/quote.service';
 import { SeoService } from '../../core/services/seo.service';
+import { AnalyticsService } from '../../core/services/analytics.service';
 import { MarkdownService } from '../../core/services/markdown.service';
 import { NavbarComponent } from '../../shared/navbar/navbar.component';
 import { FooterComponent } from '../../shared/footer/footer.component';
@@ -148,6 +149,7 @@ export class ProductDetailComponent implements OnInit {
   private categoryService = inject(CategoryService);
   private quoteService = inject(QuoteService);
   private seoService = inject(SeoService);
+  private analytics = inject(AnalyticsService);
   protected markdownService = inject(MarkdownService);
 
   protected product = computed(() => {
@@ -189,6 +191,12 @@ export class ProductDetailComponent implements OnInit {
         description: prod.shortDescription || `${prod.name ?? 'Producto artesanal'} hecho a mano en México.`,
         image: prod.image || undefined,
         type: 'product',
+      });
+
+      this.analytics.track('product_view', {
+        path: `/product/${prod.slug}`,
+        productId: prod.id,
+        categoryId: prod.categoryId,
       });
     }
   }
