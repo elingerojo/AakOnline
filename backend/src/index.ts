@@ -11,6 +11,7 @@ import imagesRouter from './routes/images.js';
 import shippingConfigRouter from './routes/shipping-config.js';
 import cacheRouter from './routes/cache.js';
 import metricsRouter from './routes/metrics.js';
+import seoRouter from './routes/seo.js';
 import { promptCache } from './services/prompt-cache.service.js';
 
 // Load .env
@@ -33,6 +34,7 @@ app.use('/api/images', imagesRouter);
 app.use('/api/shipping-config', shippingConfigRouter);
 app.use('/api/cache', cacheRouter);
 app.use('/api/metrics', metricsRouter);
+app.use('/api/seo', seoRouter);
 
 // Health check
 app.get('/api/health', (_req, res) => {
