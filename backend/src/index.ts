@@ -10,6 +10,7 @@ import aiContentRouter from './routes/ai-content.js';
 import imagesRouter from './routes/images.js';
 import shippingConfigRouter from './routes/shipping-config.js';
 import cacheRouter from './routes/cache.js';
+import metricsRouter from './routes/metrics.js';
 import { promptCache } from './services/prompt-cache.service.js';
 
 // Load .env
@@ -31,6 +32,7 @@ app.use('/api/ai', aiContentRouter);
 app.use('/api/images', imagesRouter);
 app.use('/api/shipping-config', shippingConfigRouter);
 app.use('/api/cache', cacheRouter);
+app.use('/api/metrics', metricsRouter);
 
 // Health check
 app.get('/api/health', (_req, res) => {
