@@ -24,7 +24,11 @@ const API_BASE = 'https://searchconsole.googleapis.com/webmasters/v3/sites';
 const DEFAULT_SITE_URL = 'https://aakbejuco.com/';
 export const DEFAULT_SEO_DAYS = 28;
 export const SEO_LAG_DAYS = 3;
-export const SEO_SNAPSHOT_VERSION = 1;
+/**
+ * v2 añade `pageQueries` (page × query) para alimentar la tabla de
+ * oportunidades del panel. Los snapshots v1 siguen sirviéndose sin cambios.
+ */
+export const SEO_SNAPSHOT_VERSION = 2;
 
 const REQUEST_TIMEOUT_MS = 15_000;
 const TOKEN_SAFETY_MS = 60_000;
@@ -55,6 +59,12 @@ export interface SeoDeviceRow extends SeoMetricRow {
   device: string;
 }
 
+/** Fila combinada página × consulta (v2). */
+export interface SeoPageQueryRow extends SeoMetricRow {
+  page: string;
+  query: string;
+}
+
 export interface SeoSnapshot {
   version: number;
   siteUrl: string;
@@ -69,6 +79,8 @@ export interface SeoSnapshot {
   queries: SeoQueryRow[];
   pages: SeoPageRow[];
   devices: SeoDeviceRow[];
+  /** Presente desde v2: consultas que trajeron impresiones a cada página. */
+  pageQueries?: SeoPageQueryRow[];
   fetchedAt: string;
 }
 
@@ -350,11 +362,17 @@ function getKey(row: GoogleAnalyticsRow): string {
   return Array.isArray(row.keys) && typeof row.keys[0] === 'string' ? row.keys[0] : '';
 }
 
+function getKeyAt(row: GoogleAnalyticsRow, index: number): string {
+  const keys = row.keys;
+  return Array.isArray(keys) && typeof keys[index] === 'string' ? keys[index] : '';
+}
+
 // ── Snapshot ────────────────────────────────────────────────────────────────
 
 /**
- * Descarga las cuatro dimensiones (date, query, page, device) y las normaliza
- * en un único payload cacheable. Lanza si Google falla; el llamador decide.
+ * Descarga las cinco dimensiones (date, query, page, device, page×query) y las
+ * normaliza en un único payload cacheable. Lanza si Google falla; el llamador
+ * decide.
  */
 export async function fetchSeoSnapshot(days: number = DEFAULT_SEO_DAYS): Promise<SeoSnapshot> {
   const { siteUrl } = getSeoConfig();
@@ -370,11 +388,12 @@ export async function fetchSeoSnapshot(days: number = DEFAULT_SEO_DAYS): Promise
     type: 'web',
   };
 
-  const [dateRows, queryRows, pageRows, deviceRows] = await Promise.all([
+  const [dateRows, queryRows, pageRows, deviceRows, pageQueryRows] = await Promise.all([
     querySearchConsole(siteUrl, { ...baseBody, dimensions: ['date'], rowLimit: 500 }),
     querySearchConsole(siteUrl, { ...baseBody, dimensions: ['query'], rowLimit: 1000 }),
     querySearchConsole(siteUrl, { ...baseBody, dimensions: ['page'], rowLimit: 1000 }),
     querySearchConsole(siteUrl, { ...baseBody, dimensions: ['device'], rowLimit: 10 }),
+    querySearchConsole(siteUrl, { ...baseBody, dimensions: ['page', 'query'], rowLimit: 5000 }),
   ]);
 
   const daily: SeoDailyRow[] = dateRows
@@ -394,6 +413,14 @@ export async function fetchSeoSnapshot(days: number = DEFAULT_SEO_DAYS): Promise
     .map((row) => ({ device: getKey(row), ...toMetricRow(row) }))
     .filter((row) => row.device.length > 0);
 
+  const pageQueries: SeoPageQueryRow[] = pageQueryRows
+    .map((row) => ({
+      page: getKeyAt(row, 0),
+      query: getKeyAt(row, 1),
+      ...toMetricRow(row),
+    }))
+    .filter((row) => row.page.length > 0 && row.query.length > 0);
+
   return {
     version: SEO_SNAPSHOT_VERSION,
     siteUrl,
@@ -408,6 +435,7 @@ export async function fetchSeoSnapshot(days: number = DEFAULT_SEO_DAYS): Promise
     queries,
     pages,
     devices,
+    pageQueries,
     fetchedAt: new Date().toISOString(),
   };
 }
