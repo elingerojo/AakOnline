@@ -126,6 +126,23 @@ La aplicación incluye un [`SeoService`](src/app/core/services/seo.service.ts) q
 
 Cada componente de página (home, shop, category, product-detail, quote, shipping) establece sus propias meta etiquetas en `ngOnInit`.
 
+## Métricas propias y Search Console
+
+El panel [`/admin/metrics`](src/app/admin/metrics/metrics.component.ts) tiene tres pestañas:
+
+| Pestaña | Contenido |
+|---------|-----------|
+| **Tráfico** | Visitas, visitantes, sesiones, top de páginas/productos/categorías y embudo de cotización |
+| **SEO** | Clics, impresiones, CTR y posición desde Google Search Console (snapshot de 28 días con retraso de 3) |
+| **Salud** | Errores JS no capturados, Core Web Vitals reales (p75) y purga manual de la retención |
+
+- Los eventos se capturan con [`AnalyticsService`](src/app/core/services/analytics.service.ts) (cola con flush cada 10 s / 20 eventos y `sendBeacon` al salir) y se envían a `POST /api/metrics/events`.
+- Los errores no capturados pasan por [`AnalyticsErrorHandler`](src/app/core/services/analytics-error-handler.ts) (evento `js_error`) y los vitals por `web-vitals` (evento `web_vital` con `meta.metric = lcp|inp|cls`).
+- **Privacidad:** sin GA4, sin cookies de terceros, sin IP y sin datos personales. El único identificador es un UUID anónimo en `localStorage` (`aak_session_id`) y `navigator.doNotTrack === '1'` desactiva el tracking.
+- **Retención:** 90 días. La purga automática corre durante la ingesta y la pestaña Salud permite ejecutarla manualmente.
+
+Referencias: [`backend/docs/metrics.md`](../backend/docs/metrics.md) y [`backend/docs/search-console.md`](../backend/docs/search-console.md).
+
 ## Características
 
 - **Modo oscuro** con persistencia en localStorage y detección de preferencia del sistema
