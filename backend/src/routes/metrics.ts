@@ -1,9 +1,11 @@
 /**
  * metrics.ts — Ingesta y agregación de métricas propias (sin PII, sin GA4).
  *
- *   POST /api/metrics/events   → 202 { accepted, rejected }
- *   GET  /api/metrics/summary  → agregados por día (America/Mexico_City)
- *   GET  /api/metrics/health   → { ok, lastEventAt }
+ *   POST /api/metrics/events         → 202 { accepted, rejected }
+ *   GET  /api/metrics/summary        → agregados por día (America/Mexico_City)
+ *   GET  /api/metrics/health         → { ok, lastEventAt }
+ *   GET  /api/metrics/health-summary → errores JS y Core Web Vitals (p75)
+ *   POST /api/metrics/purge          → borra eventos fuera de retención
  *
  * Reglas: nunca se guarda IP ni user-agent; solo visitorId/sessionId opacos
  * generados en el navegador. Si Neon falla se responde 503 y el resto de la
@@ -30,6 +32,8 @@ const EVENT_TYPES = new Set<string>([
   'shipping_calc',
   'search',
   'wishlist_add',
+  'js_error',
+  'web_vital',
 ]);
 
 const DEVICES = new Set<string>(['mobile', 'tablet', 'desktop']);
@@ -41,6 +45,11 @@ const RATE_LIMIT_MAX = 300;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RETENTION_DAYS = 90;
 const TIMEZONE = 'America/Mexico_City';
+
+/** Salud del sitio: errores JS y Core Web Vitals. */
+type VitalMetric = 'lcp' | 'inp' | 'cls';
+const MAX_ERROR_GROUPS = 10;
+const MAX_ERROR_MESSAGE_LENGTH = 200;
 
 // ── Rate limit en memoria (por visitorId) ───────────────────────────────────
 
@@ -175,6 +184,30 @@ async function purgeOldEvents(): Promise<void> {
   } catch (error) {
     console.warn('[metrics] purge skipped:', (error as Error).message);
   }
+}
+
+/** Normaliza timestamps de neon-http (string) o Date a ISO 8601 UTC. */
+function toIso(value: unknown): string | null {
+  if (value == null) return null;
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === 'string') {
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? value : parsed.toISOString();
+  }
+  return null;
+}
+
+/** Convierte agregados de Postgres (number o string) a número o null. */
+function toNumberOrNull(value: unknown): number | null {
+  if (value == null) return null;
+  const parsed = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+/** LCP/INP se redondean a milisegundos; CLS conserva 3 decimales. */
+function roundVitalValue(metric: VitalMetric, value: number | null): number {
+  if (value == null || !Number.isFinite(value)) return 0;
+  return metric === 'cls' ? Math.round(value * 1000) / 1000 : Math.round(value);
 }
 
 // ── POST /api/metrics/events ────────────────────────────────────────────────
@@ -366,6 +399,108 @@ router.get('/health', async (_req, res) => {
   } catch (error) {
     console.warn('[metrics] health failed:', (error as Error).message);
     res.status(503).json({ ok: false, error: 'metrics-unavailable' });
+  }
+});
+
+// ── GET /api/metrics/health-summary ─────────────────────────────────────────
+
+router.get('/health-summary', async (req, res) => {
+  const requested = Number(req.query['days'] ?? 7);
+  const days = ALLOWED_RANGES.has(requested) ? requested : 7;
+
+  const to = mexicoToday();
+  const from = addDays(to, -(days - 1));
+  const rangeWhere = sql`timezone('${sql.raw(TIMEZONE)}', ${analyticsEvents.createdAt})::date between ${from}::date and ${to}::date`;
+
+  try {
+    const [errorTotals] = await db
+      .select({
+        total: sql<number>`count(*)`.mapWith(Number),
+        unique: sql<number>`count(distinct ${analyticsEvents.meta}->>'message')`.mapWith(Number),
+      })
+      .from(analyticsEvents)
+      .where(and(rangeWhere, eq(analyticsEvents.type, 'js_error')));
+
+    // Se agrupa por mensaje crudo y se trunca en JS para no mezclar mensajes
+    // distintos que solo comparten los primeros 200 caracteres.
+    const topErrorRows = await db
+      .select({
+        message: sql<string | null>`${analyticsEvents.meta}->>'message'`,
+        count: count(),
+        lastPath: sql<string | null>`(array_agg(${analyticsEvents.path} order by ${analyticsEvents.createdAt} desc))[1]`,
+        lastSeenAt: sql<string | null>`max(${analyticsEvents.createdAt})`,
+      })
+      .from(analyticsEvents)
+      .where(and(rangeWhere, eq(analyticsEvents.type, 'js_error')))
+      .groupBy(sql`${analyticsEvents.meta}->>'message'`)
+      .orderBy(desc(sql`count(*)`), desc(sql`max(${analyticsEvents.createdAt})`))
+      .limit(MAX_ERROR_GROUPS);
+
+    const p75Expr = (metric: VitalMetric) =>
+      sql<number | null>`percentile_cont(0.75) within group (order by ${analyticsEvents.value}) filter (where ${analyticsEvents.meta}->>'metric' = ${metric})`;
+    const samplesExpr = (metric: VitalMetric) =>
+      sql<number>`count(*) filter (where ${analyticsEvents.meta}->>'metric' = ${metric})`.mapWith(Number);
+
+    const [vitalsRow] = await db
+      .select({
+        lcpP75: p75Expr('lcp'),
+        lcpSamples: samplesExpr('lcp'),
+        inpP75: p75Expr('inp'),
+        inpSamples: samplesExpr('inp'),
+        clsP75: p75Expr('cls'),
+        clsSamples: samplesExpr('cls'),
+      })
+      .from(analyticsEvents)
+      .where(and(rangeWhere, eq(analyticsEvents.type, 'web_vital'), isNotNull(analyticsEvents.value)));
+
+    const vitals = {
+      lcp: {
+        p75: roundVitalValue('lcp', toNumberOrNull(vitalsRow?.lcpP75)),
+        samples: Number(vitalsRow?.lcpSamples ?? 0),
+      },
+      inp: {
+        p75: roundVitalValue('inp', toNumberOrNull(vitalsRow?.inpP75)),
+        samples: Number(vitalsRow?.inpSamples ?? 0),
+      },
+      cls: {
+        p75: roundVitalValue('cls', toNumberOrNull(vitalsRow?.clsP75)),
+        samples: Number(vitalsRow?.clsSamples ?? 0),
+      },
+    };
+
+    res.json({
+      range: { days, from, to },
+      errors: { total: errorTotals?.total ?? 0, unique: errorTotals?.unique ?? 0 },
+      topErrors: topErrorRows.map((row) => ({
+        message: (row.message ?? 'Error sin mensaje').slice(0, MAX_ERROR_MESSAGE_LENGTH),
+        count: Number(row.count ?? 0),
+        lastPath: row.lastPath ?? '/',
+        lastSeenAt: toIso(row.lastSeenAt),
+      })),
+      vitals,
+      generatedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.warn('[metrics] health-summary failed:', (error as Error).message);
+    res.status(503).json({ error: 'metrics-unavailable' });
+  }
+});
+
+// ── POST /api/metrics/purge ─────────────────────────────────────────────────
+
+router.post('/purge', async (_req, res) => {
+  try {
+    const deleted = await db
+      .delete(analyticsEvents)
+      .where(
+        sql`${analyticsEvents.createdAt} < now() - interval '${sql.raw(String(RETENTION_DAYS))} days'`
+      )
+      .returning({ id: analyticsEvents.id });
+
+    res.json({ deleted: deleted.length });
+  } catch (error) {
+    console.warn('[metrics] purge failed:', (error as Error).message);
+    res.status(503).json({ error: 'metrics-unavailable' });
   }
 });
 
