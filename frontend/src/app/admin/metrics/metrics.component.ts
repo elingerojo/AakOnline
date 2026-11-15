@@ -1,5 +1,7 @@
 import { Component, computed, inject, signal, type OnInit } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { AdminNavComponent } from '../admin-nav/admin-nav.component';
+import { CategoryService } from '../../core/services/category.service';
 import { ProductService } from '../../core/services/product.service';
 import {
   METRICS_RANGES,
@@ -24,6 +26,14 @@ interface KpiCard {
   hint: string;
 }
 
+interface FunnelStep {
+  label: string;
+  value: number;
+  hint: string;
+  /** Porcentaje sobre la base del embudo; `null` si no hubo vistas de producto. */
+  percent: number | null;
+}
+
 /**
  * Panel `/admin/metrics`: tráfico y comportamiento del catálogo a partir del
  * resumen del Corte 2. Sin librerías de gráficas: SVG/CSS y contenedores.
@@ -31,7 +41,7 @@ interface KpiCard {
 @Component({
   selector: 'app-metrics',
   standalone: true,
-  imports: [AdminNavComponent],
+  imports: [RouterLink, AdminNavComponent],
   template: `
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
       <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
@@ -133,6 +143,95 @@ interface KpiCard {
               <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">Sin visitas registradas en este periodo.</p>
             }
           </section>
+
+          <!-- Tops -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <section class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+              <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Top 10 páginas</h2>
+              <ol class="mt-3 space-y-2">
+                @for (page of s.topPages; track page.path; let i = $index) {
+                  <li class="flex items-center justify-between gap-3 text-sm">
+                    <span class="truncate text-gray-700 dark:text-gray-200" [attr.title]="page.path">
+                      <span class="text-gray-400 dark:text-gray-500 mr-1.5">{{ i + 1 }}.</span>{{ page.path }}
+                    </span>
+                    <span class="font-medium text-gray-900 dark:text-white tabular-nums">{{ formatNumber(page.views) }}</span>
+                  </li>
+                } @empty {
+                  <li class="text-sm text-gray-400 dark:text-gray-500">Sin datos.</li>
+                }
+              </ol>
+            </section>
+
+            <section class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+              <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Top 10 productos</h2>
+              <ol class="mt-3 space-y-2">
+                @for (product of s.topProducts; track product.productId; let i = $index) {
+                  <li class="flex items-center justify-between gap-3 text-sm">
+                    <span class="truncate text-gray-700 dark:text-gray-200">
+                      <span class="text-gray-400 dark:text-gray-500 mr-1.5">{{ i + 1 }}.</span>
+                      @if (productLink(product.productId); as link) {
+                        <a [routerLink]="link"
+                           class="hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+                           [attr.title]="productName(product.productId)">{{ productName(product.productId) }}</a>
+                      } @else {
+                        {{ productName(product.productId) }}
+                      }
+                    </span>
+                    <span class="font-medium text-gray-900 dark:text-white tabular-nums">{{ formatNumber(product.views) }}</span>
+                  </li>
+                } @empty {
+                  <li class="text-sm text-gray-400 dark:text-gray-500">Sin datos.</li>
+                }
+              </ol>
+            </section>
+
+            <section class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+              <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Top 10 categorías</h2>
+              <ol class="mt-3 space-y-2">
+                @for (category of s.topCategories; track category.categoryId; let i = $index) {
+                  <li class="flex items-center justify-between gap-3 text-sm">
+                    <span class="truncate text-gray-700 dark:text-gray-200" [attr.title]="categoryName(category.categoryId)">
+                      <span class="text-gray-400 dark:text-gray-500 mr-1.5">{{ i + 1 }}.</span>{{ categoryName(category.categoryId) }}
+                    </span>
+                    <span class="font-medium text-gray-900 dark:text-white tabular-nums">{{ formatNumber(category.views) }}</span>
+                  </li>
+                } @empty {
+                  <li class="text-sm text-gray-400 dark:text-gray-500">Sin datos.</li>
+                }
+              </ol>
+            </section>
+          </div>
+
+          <!-- Embudo de interacción -->
+          <section class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+            <div class="flex items-baseline justify-between gap-3 flex-wrap">
+              <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Embudo de interacción</h2>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Porcentaje sobre las vistas de producto</p>
+            </div>
+
+            <ol class="mt-4 space-y-3">
+              @for (step of funnelSteps(); track step.label) {
+                <li>
+                  <div class="flex items-center justify-between gap-3 text-sm">
+                    <span class="text-gray-700 dark:text-gray-200">{{ step.label }}</span>
+                    <span class="text-gray-500 dark:text-gray-400 tabular-nums">
+                      {{ formatNumber(step.value) }}
+                      <span class="ml-2 font-medium text-gray-900 dark:text-white">
+                        {{ step.percent == null ? '—' : step.percent + '%' }}
+                      </span>
+                    </span>
+                  </div>
+                  <div class="mt-1 h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+                    <div class="h-full rounded-full bg-amber-600 dark:bg-amber-400"
+                         [style.width.%]="funnelWidth(step.percent)"></div>
+                  </div>
+                  <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ step.hint }}</p>
+                </li>
+              } @empty {
+                <li class="text-sm text-gray-400 dark:text-gray-500">Sin datos.</li>
+              }
+            </ol>
+          </section>
         }
       </div>
     </div>
@@ -141,6 +240,7 @@ interface KpiCard {
 export class MetricsComponent implements OnInit {
   private readonly metricsService = inject(MetricsService);
   private readonly productService = inject(ProductService);
+  private readonly categoryService = inject(CategoryService);
 
   protected readonly ranges = METRICS_RANGES;
   protected readonly days = signal<MetricsDays>(7);
@@ -284,6 +384,42 @@ export class MetricsComponent implements OnInit {
     const product = this.productService.products().find((item) => item.id === productId);
     const name = product?.name?.trim();
     return name && name.length > 0 ? name : `Producto #${productId}`;
+  }
+
+  protected productLink(productId: number): string | null {
+    const product = this.productService.products().find((item) => item.id === productId);
+    return product?.slug ? `/product/${product.slug}` : null;
+  }
+
+  protected categoryName(categoryId: number): string {
+    const category = this.categoryService.categories().find((item) => item.id === categoryId);
+    const name = category?.name?.trim();
+    return name && name.length > 0 ? name : `Categoría #${categoryId}`;
+  }
+
+  protected readonly funnelSteps = computed<FunnelStep[]>(() => {
+    const summary = this.summary();
+    if (!summary) return [];
+
+    const funnel = summary.funnel;
+    const base = funnel.productViews || 0;
+    const steps: Array<{ label: string; value: number; hint: string }> = [
+      { label: 'Producto visto', value: funnel.productViews, hint: 'Base del embudo: vistas de detalle de producto' },
+      { label: 'Agregado a cotización', value: funnel.addToQuote, hint: 'Clics en "Agregar a cotización"' },
+      { label: 'Cotización abierta', value: funnel.quoteOpens, hint: 'Visitas a la página de cotización' },
+      { label: 'PDF descargado', value: funnel.pdfDownloads, hint: 'Descargas del PDF de la cotización' },
+      { label: 'Clic en contacto', value: funnel.contactClicks, hint: 'Clics en la barra de contacto' },
+    ];
+
+    return steps.map((step) => ({
+      ...step,
+      percent: base > 0 ? Math.round((step.value / base) * 1000) / 10 : null,
+    }));
+  });
+
+  protected funnelWidth(percent: number | null): number {
+    if (percent == null || percent <= 0) return 0;
+    return Math.min(100, Math.max(2, percent));
   }
 
   private async load(): Promise<void> {
