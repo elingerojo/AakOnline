@@ -85,3 +85,21 @@ Migración: `backend/drizzle/0002_lame_magma.sql`
 - El access token se cachea en memoria hasta 60 s antes de expirar; no se
   persiste en Neon ni se devuelve por API.
 - Sin credenciales la API responde `200 { connected: false }`, nunca 500.
+
+## Verificado en vivo (2026-11-15)
+
+- `GET /api/seo/status` → `connected: true`, `hasCredentials: true`,
+  `lastSuccessAt` fijado y `lastError: null`.
+- `POST /api/seo/refresh` → snapshot persistido con
+  `range 2026-10-16 → 2026-11-12` (28 días, lag 3) y `fetchedAt` en UTC.
+- `GET /api/seo/summary?days=28` → devuelve ese snapshot con `stale: false` sin
+  volver a llamar a Google.
+- El primer snapshot no trae filas (`daily`, `queries`, `pages`, `devices` en
+  `[]`) porque la propiedad se verificó el 2026-11-14, después del cierre de la
+  ventana: Google omite filas cuando no hay impresiones. `connected: true` con
+  ceros es el estado esperado hasta que exista indexación; el panel muestra
+  `fetchedAt` y el aviso de retraso para no confundir "cero" con "sin datos".
+- El único bloqueo durante la puesta en marcha fue
+  `403: Google Search Console API has not been used in project ...`: se resolvió
+  habilitando la API en el proyecto de la service account, sin cambios de código
+  ni redeploy.
