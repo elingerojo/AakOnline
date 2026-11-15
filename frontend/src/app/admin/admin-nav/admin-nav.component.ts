@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 /**
- * Navegación mínima del panel de administración (Catálogo · Categorías · Envío).
+ * Navegación mínima del panel de administración (Catálogo · Categorías · Envío · Métricas).
  */
 @Component({
   selector: 'app-admin-nav',
@@ -16,6 +16,8 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
          class="hover:text-amber-600 transition-colors">Categorías</a>
       <a routerLink="/admin/shipping" routerLinkActive="text-amber-600"
          class="hover:text-amber-600 transition-colors">Envío</a>
+      <a routerLink="/admin/metrics" routerLinkActive="text-amber-600"
+         class="hover:text-amber-600 transition-colors">Métricas</a>
     </nav>
   `,
 })

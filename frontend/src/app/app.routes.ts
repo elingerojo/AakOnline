@@ -38,5 +38,9 @@ export const routes: Routes = [
     path: 'admin/shipping',
     loadComponent: () => import('./admin/shipping-config/shipping-config.component').then(m => m.ShippingConfigComponent)
   },
+  {
+    path: 'admin/metrics',
+    loadComponent: () => import('./admin/metrics/metrics.component').then(m => m.MetricsComponent)
+  },
   { path: '**', redirectTo: '' }
 ];

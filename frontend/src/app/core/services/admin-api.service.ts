@@ -11,9 +11,16 @@ export interface GeminiResult {
   blobImageUrl?: string | null;
 }
 
+/**
+ * Base de la API del backend (Railway). Fuente única para todo el frontend:
+ * los servicios que consumen la API deben importar esta constante en lugar
+ * de repetir el string.
+ */
+export const ADMIN_API_BASE = 'https://aakonline-production.up.railway.app/api';
+
 @Injectable({ providedIn: 'root' })
 export class AdminApiService {
-  private baseUrl = 'https://aakonline-production.up.railway.app/api';
+  private baseUrl = ADMIN_API_BASE;
   private readonly CACHE_KEY = 'aak-cache-refresh-date';
 
   // ========== Products ==========
