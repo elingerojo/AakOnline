@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { onCLS, onINP, onLCP, type Metric } from 'web-vitals';
 import { SessionService } from './session.service';
 
 /**
@@ -28,7 +29,9 @@ export type AnalyticsEventType =
   | 'contact_click'
   | 'shipping_calc'
   | 'search'
-  | 'wishlist_add';
+  | 'wishlist_add'
+  | 'js_error'
+  | 'web_vital';
 
 export interface TrackOptions {
   /** Ruta a reportar; por defecto la ruta actual del navegador. */
@@ -63,6 +66,8 @@ const EVENT_TYPES = new Set<string>([
   'shipping_calc',
   'search',
   'wishlist_add',
+  'js_error',
+  'web_vital',
 ]);
 
 @Injectable({ providedIn: 'root' })
@@ -94,6 +99,8 @@ export class AnalyticsService {
       document.addEventListener('visibilitychange', this.onVisibilityChange);
 
       this.timer = setInterval(() => this.flush(false), FLUSH_INTERVAL_MS);
+
+      this.initVitals();
     } catch {
       this.disabled = true;
     }
@@ -134,6 +141,33 @@ export class AnalyticsService {
       return typeof navigator !== 'undefined' && navigator.doNotTrack === '1';
     } catch {
       return false;
+    }
+  }
+
+  /**
+   * Core Web Vitals reales del navegador. Un evento `web_vital` por métrica con
+   * `value` en ms (LCP/INP) o número (CLS) y `meta.metric = lcp|inp|cls`.
+   * `/admin` se excluye igual que en `page_view` para no mezclar el panel con
+   * la tienda en el p75.
+   */
+  private initVitals(): void {
+    try {
+      const report = (metric: Metric): void => {
+        const path = this.currentPath();
+        if (path.startsWith('/admin')) return;
+
+        this.track('web_vital', {
+          path,
+          value: metric.name === 'CLS' ? metric.value : Math.round(metric.value),
+          meta: { metric: metric.name.toLowerCase(), rating: metric.rating },
+        });
+      };
+
+      onLCP(report);
+      onINP(report);
+      onCLS(report);
+    } catch {
+      // Los vitals son opcionales: nunca bloquean el arranque.
     }
   }
 

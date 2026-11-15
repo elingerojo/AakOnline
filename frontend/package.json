@@ -25,8 +25,8 @@
     "@ng-icons/feather-icons": "^34.0.0",
     "@ng-icons/heroicons": "^34.0.0",
     "@ng-icons/material-icons": "^34.0.0",
-    "aos": "^2.3.4",
     "@tailwindcss/postcss": "^4.3.3",
+    "aos": "^2.3.4",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "lightgallery": "^2.9.0",
@@ -34,7 +34,8 @@
     "postcss": "^8.5.23",
     "rxjs": "~7.8.0",
     "tailwindcss": "^4.3.3",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "web-vitals": "^6.2.3"
   },
   "devDependencies": {
     "@angular/build": "^22.0.7",
