@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, text, doublePrecision, jsonb, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, text, doublePrecision, jsonb, timestamp, index } from 'drizzle-orm/pg-core';
 
 export const products = pgTable('products', {
   id: serial('id').primaryKey(),
@@ -42,3 +42,31 @@ export const shippingConfig = pgTable('shipping_config', {
   tiers: jsonb('tiers').notNull(),
   extraUnitFactor: doublePrecision('extra_unit_factor').default(0.5),
 });
+
+/**
+ * Eventos de tráfico y comportamiento del catálogo (sin PII).
+ * visitorId = UUID persistente de SessionService (localStorage), nunca IP ni user-agent.
+ */
+export const analyticsEvents = pgTable(
+  'analytics_events',
+  {
+    id: serial('id').primaryKey(),
+    type: text('type').notNull(),
+    path: text('path').notNull(),
+    productId: integer('product_id'),
+    categoryId: integer('category_id'),
+    visitorId: text('visitor_id').notNull(),
+    sessionId: text('session_id'),
+    referrerHost: text('referrer_host'),
+    device: text('device'),
+    value: doublePrecision('value'),
+    meta: jsonb('meta').default({}),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('analytics_events_created_at_idx').on(table.createdAt),
+    index('analytics_events_type_created_at_idx').on(table.type, table.createdAt),
+    index('analytics_events_product_id_idx').on(table.productId),
+    index('analytics_events_path_idx').on(table.path),
+  ]
+);
