@@ -10,6 +10,9 @@ import {
   type MetricsDays,
   type MetricsSummary,
 } from './metrics.service';
+import { SeoPanelComponent } from './seo-panel.component';
+
+type MetricsTab = 'trafico' | 'seo';
 
 const TIMEZONE = 'America/Mexico_City';
 
@@ -41,7 +44,7 @@ interface FunnelStep {
 @Component({
   selector: 'app-metrics',
   standalone: true,
-  imports: [RouterLink, AdminNavComponent],
+  imports: [RouterLink, AdminNavComponent, SeoPanelComponent],
   template: `
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
       <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
@@ -52,9 +55,27 @@ interface FunnelStep {
           </div>
           <app-admin-nav />
         </div>
+
+        <!-- Pestañas: tráfico propio y SEO de Google Search Console -->
+        <div class="max-w-7xl mx-auto px-4">
+          <div class="flex items-center gap-1 border-b border-gray-200 dark:border-gray-700"
+               role="tablist" aria-label="Secciones de métricas">
+            <button type="button" role="tab" (click)="selectTab('trafico')"
+                    [attr.aria-selected]="tab() === 'trafico'" [class]="tabClass('trafico')">
+              Tráfico
+            </button>
+            <button type="button" role="tab" (click)="selectTab('seo')"
+                    [attr.aria-selected]="tab() === 'seo'" [class]="tabClass('seo')">
+              SEO
+            </button>
+          </div>
+        </div>
       </header>
 
       <div class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        @if (tab() === 'seo') {
+          <app-seo-panel />
+        } @else {
         <!-- Filtro de periodo + nota de zona horaria -->
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="inline-flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
@@ -244,6 +265,7 @@ interface FunnelStep {
             </ol>
           </section>
         }
+        }
       </div>
     </div>
   `,
@@ -255,6 +277,7 @@ export class MetricsComponent implements OnInit {
 
   protected readonly ranges = METRICS_RANGES;
   protected readonly days = signal<MetricsDays>(7);
+  protected readonly tab = signal<MetricsTab>('trafico');
   protected readonly summary = signal<MetricsSummary | null>(null);
   protected readonly loading = signal(true);
   protected readonly error = signal('');
@@ -263,6 +286,17 @@ export class MetricsComponent implements OnInit {
 
   ngOnInit(): void {
     void this.load();
+  }
+
+  protected selectTab(tab: MetricsTab): void {
+    this.tab.set(tab);
+  }
+
+  protected tabClass(tab: MetricsTab): string {
+    const base = 'px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer ';
+    return this.tab() === tab
+      ? `${base}border-amber-600 text-amber-700 dark:text-amber-300`
+      : `${base}border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200`;
   }
 
   protected selectDays(days: MetricsDays): void {
