@@ -1,13 +1,28 @@
 import { Component, computed, inject, signal, type OnInit } from '@angular/core';
 import { AdminNavComponent } from '../admin-nav/admin-nav.component';
+import { ProductService } from '../../core/services/product.service';
 import {
   METRICS_RANGES,
   MetricsService,
+  type MetricsDailyPoint,
   type MetricsDays,
   type MetricsSummary,
 } from './metrics.service';
 
 const TIMEZONE = 'America/Mexico_City';
+
+/** Suma un día a una fecha `YYYY-MM-DD` sin desfase de zona horaria. */
+function nextDay(isoDate: string): string {
+  const date = new Date(`${isoDate}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + 1);
+  return date.toISOString().slice(0, 10);
+}
+
+interface KpiCard {
+  label: string;
+  value: string;
+  hint: string;
+}
 
 /**
  * Panel `/admin/metrics`: tráfico y comportamiento del catálogo a partir del
@@ -79,10 +94,45 @@ const TIMEZONE = 'America/Mexico_City';
             </p>
           </div>
         } @else if (summary(); as s) {
-          <!-- Secciones de contenido (KPIs, tendencia, tops y embudo) -->
-          <p class="text-sm text-gray-500 dark:text-gray-400">
-            Periodo de {{ s.range.days }} días.
-          </p>
+          <!-- KPIs -->
+          <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4" aria-label="Indicadores principales">
+            @for (card of kpis(); track card.label) {
+              <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+                <p class="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ card.label }}</p>
+                <p class="mt-2 text-2xl font-bold text-gray-900 dark:text-white break-words">{{ card.value }}</p>
+                @if (card.hint) {
+                  <p class="mt-1 text-xs text-gray-400 dark:text-gray-500 truncate" [attr.title]="card.hint">{{ card.hint }}</p>
+                }
+              </div>
+            }
+          </section>
+
+          <!-- Tendencia diaria -->
+          <section class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+            <div class="flex items-baseline justify-between gap-3 flex-wrap">
+              <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Tendencia diaria</h2>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Altura: visitas · pasa el cursor para ver el detalle</p>
+            </div>
+
+            @if (trend().length > 0) {
+              <div class="mt-4 flex items-end gap-[2px] h-40" role="img"
+                   [attr.aria-label]="'Visitas por día del ' + s.range.from + ' al ' + s.range.to">
+                @for (day of trend(); track day.date) {
+                  <div class="flex-1 min-w-[2px] h-full flex items-end">
+                    <div class="w-full rounded-t bg-amber-500 dark:bg-amber-400"
+                         [style.height.%]="barHeight(day.pageViews)"
+                         [attr.title]="dayTitle(day)"></div>
+                  </div>
+                }
+              </div>
+              <div class="mt-2 flex justify-between text-xs text-gray-400 dark:text-gray-500">
+                <span>{{ dayLabel(s.range.from) }}</span>
+                <span>{{ dayLabel(s.range.to) }}</span>
+              </div>
+            } @else {
+              <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">Sin visitas registradas en este periodo.</p>
+            }
+          </section>
         }
       </div>
     </div>
@@ -90,6 +140,7 @@ const TIMEZONE = 'America/Mexico_City';
 })
 export class MetricsComponent implements OnInit {
   private readonly metricsService = inject(MetricsService);
+  private readonly productService = inject(ProductService);
 
   protected readonly ranges = METRICS_RANGES;
   protected readonly days = signal<MetricsDays>(7);
@@ -112,6 +163,61 @@ export class MetricsComponent implements OnInit {
   protected retry(): void {
     void this.load();
   }
+
+  /** Serie diaria completa: el backend omite días sin eventos, aquí se rellenan con 0. */
+  protected readonly trend = computed<MetricsDailyPoint[]>(() => {
+    const summary = this.summary();
+    if (!summary?.range?.from || !summary?.range?.to) return [];
+
+    const byDate = new Map<string, MetricsDailyPoint>();
+    for (const day of summary.daily ?? []) byDate.set(day.date, day);
+
+    const points: MetricsDailyPoint[] = [];
+    let cursor = summary.range.from;
+    for (let index = 0; index < 400 && cursor <= summary.range.to; index += 1) {
+      const point = byDate.get(cursor);
+      points.push({
+        date: cursor,
+        pageViews: point?.pageViews ?? 0,
+        visitors: point?.visitors ?? 0,
+      });
+      cursor = nextDay(cursor);
+    }
+    return points;
+  });
+
+  protected readonly maxPageViews = computed(() =>
+    this.trend().reduce((max, day) => Math.max(max, day.pageViews), 0)
+  );
+
+  protected readonly kpis = computed<KpiCard[]>(() => {
+    const summary = this.summary();
+    if (!summary) return [];
+
+    const mostViewed = summary.topProducts?.[0];
+    return [
+      {
+        label: 'Visitas',
+        value: this.formatNumber(summary.totals.pageViews),
+        hint: 'Vistas de página registradas',
+      },
+      {
+        label: 'Visitantes únicos',
+        value: this.formatNumber(summary.totals.visitors),
+        hint: 'Un identificador por navegador',
+      },
+      {
+        label: 'Sesiones',
+        value: this.formatNumber(summary.totals.sessions),
+        hint: 'Se reinicia tras 30 min sin actividad',
+      },
+      {
+        label: 'Producto más visto',
+        value: mostViewed ? this.productName(mostViewed.productId) : '—',
+        hint: mostViewed ? `${this.formatNumber(mostViewed.views)} vistas` : 'Sin vistas de producto',
+      },
+    ];
+  });
 
   protected readonly isEmpty = computed(() => {
     const summary = this.summary();
@@ -148,6 +254,36 @@ export class MetricsComponent implements OnInit {
 
   protected formatNumber(value: number | null | undefined): string {
     return Number(value ?? 0).toLocaleString('es-MX');
+  }
+
+  protected barHeight(pageViews: number): number {
+    const max = this.maxPageViews();
+    if (pageViews <= 0 || max <= 0) return 0;
+    return Math.max(3, Math.round((pageViews / max) * 100));
+  }
+
+  protected dayLabel(date: string): string {
+    try {
+      const parsed = new Date(`${date}T12:00:00Z`);
+      if (Number.isNaN(parsed.getTime())) return date;
+      return new Intl.DateTimeFormat('es-MX', {
+        day: '2-digit',
+        month: 'short',
+        timeZone: 'UTC',
+      }).format(parsed);
+    } catch {
+      return date;
+    }
+  }
+
+  protected dayTitle(day: MetricsDailyPoint): string {
+    return `${this.dayLabel(day.date)}: ${this.formatNumber(day.pageViews)} visitas · ${this.formatNumber(day.visitors)} visitantes`;
+  }
+
+  protected productName(productId: number): string {
+    const product = this.productService.products().find((item) => item.id === productId);
+    const name = product?.name?.trim();
+    return name && name.length > 0 ? name : `Producto #${productId}`;
   }
 
   private async load(): Promise<void> {
