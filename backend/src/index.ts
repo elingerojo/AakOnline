@@ -39,6 +39,13 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Errores de parseo del cuerpo (express.json) y demás: JSON sin stack trace.
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  const status = Number(err?.status) || 500;
+  console.warn('[api] request error:', err?.message ?? 'unknown');
+  res.status(status).json({ error: status === 400 ? 'invalid-request' : 'internal-error' });
+});
+
 // Inicializar caché de prompts al arrancar
 promptCache.initialize().then(() => {
   console.log('[Gemini] Prompt cache initialized');

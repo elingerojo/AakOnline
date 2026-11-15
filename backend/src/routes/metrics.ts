@@ -10,7 +10,7 @@
  * API sigue funcionando.
  */
 
-import express, { Router } from 'express';
+import express, { Router, type NextFunction, type Request, type Response } from 'express';
 import { and, count, desc, eq, isNotNull, sql } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { analyticsEvents } from '../schema/index.js';
@@ -156,9 +156,14 @@ function addDays(isoDate: string, delta: number): string {
   return date.toISOString().slice(0, 10);
 }
 
-/** Expresión del día local (America/Mexico_City) en formato YYYY-MM-DD. */
+/**
+ * Expresión del día local (America/Mexico_City) en formato YYYY-MM-DD.
+ * La zona se inlinea como literal (constante del código) para que SELECT,
+ * GROUP BY y ORDER BY sean textualmente idénticos: si viajara como parámetro,
+ * PostgreSQL recibiría $1/$2 distintos y rechazaría el GROUP BY.
+ */
 function dayExpr() {
-  return sql<string>`to_char(timezone(${TIMEZONE}, ${analyticsEvents.createdAt}), 'YYYY-MM-DD')`;
+  return sql<string>`to_char(timezone('${sql.raw(TIMEZONE)}', ${analyticsEvents.createdAt}), 'YYYY-MM-DD')`;
 }
 
 /** Retención: 90 días. Se ejecuta en ~1 de cada 100 ingestas. */
@@ -256,7 +261,7 @@ router.get('/summary', async (req, res) => {
 
   const to = mexicoToday();
   const from = addDays(to, -(days - 1));
-  const rangeWhere = sql`timezone(${TIMEZONE}, ${analyticsEvents.createdAt})::date between ${from}::date and ${to}::date`;
+  const rangeWhere = sql`timezone('${sql.raw(TIMEZONE)}', ${analyticsEvents.createdAt})::date between ${from}::date and ${to}::date`;
 
   try {
     const typeRows = await db
@@ -362,6 +367,12 @@ router.get('/health', async (_req, res) => {
     console.warn('[metrics] health failed:', (error as Error).message);
     res.status(503).json({ ok: false, error: 'metrics-unavailable' });
   }
+});
+
+// Nunca exponer stack traces: cualquier error de parseo del cuerpo termina aquí.
+router.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
+  console.warn('[metrics] invalid request:', error?.message ?? 'unknown');
+  res.status(400).json({ error: 'invalid-payload' });
 });
 
 export default router;
