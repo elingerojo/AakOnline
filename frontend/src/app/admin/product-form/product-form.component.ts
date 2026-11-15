@@ -4,6 +4,7 @@ import { AdminApiService } from '../../core/services/admin-api.service';
 import { CategoryService } from '../../core/services/category.service';
 import { ProductService } from '../../core/services/product.service';
 import { ProductPreviewComponent } from '../product-preview/product-preview.component';
+import { SeoChecklistComponent } from './seo-checklist.component';
 import type { Product, ProductStatus, FeaturedSection } from '@shared/models/product.model';
 import type { Category, CategoryVariant } from '@shared/models/category.model';
 import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
@@ -11,7 +12,7 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [FormsModule, ProductPreviewComponent],
+  imports: [FormsModule, ProductPreviewComponent, SeoChecklistComponent],
   template: `
     <form (ngSubmit)="onSubmit()" (input)="onFormInput($event)" (change)="onFormInput($event)" class="space-y-6">
       <!-- Top actions: Generar con Gemini + Vista previa + Guardar -->
@@ -401,6 +402,16 @@ import { generateSlug, formatCurrency } from '../../core/utils/text-utils';
                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
         </div>
+
+        <!-- Checklist SEO: metadatos derivados, informativo (no bloquea guardar) -->
+        <app-seo-checklist
+          [name]="formState.name"
+          [shortDescription]="formState.shortDescription"
+          [slug]="seoSlug"
+          [image]="formState.image"
+          [categoryId]="formState.categoryId"
+          [validCategoryIds]="seoCategoryIds"
+          [status]="formState.status" />
       </div>
 
       <!-- Actions -->
@@ -685,6 +696,18 @@ export class ProductFormComponent implements OnInit {
   protected variantPriceLabel(price: number): string {
     if (price === 0) return '';
     return `${price > 0 ? '+' : '-'}${formatCurrency(Math.abs(price))}`;
+  }
+
+  // ── Checklist SEO (solo lectura) ─────────────────────────────────────────
+
+  /** Slug que se guardará en `onSubmit` (misma fórmula, sin fallback de timestamp). */
+  protected get seoSlug(): string {
+    return generateSlug(this.formState.name || '');
+  }
+
+  /** IDs de categorías válidas para el checklist. */
+  protected get seoCategoryIds(): number[] {
+    return this.categories().map((category) => category.id);
   }
 
   // ── Product highlighting ─────────────────────────────────────────────────
