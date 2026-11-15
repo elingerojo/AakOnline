@@ -72,6 +72,45 @@ export interface MetricsEventCount {
   count: number;
 }
 
+/** Grupo de errores JS agrupado por mensaje (Corte 5). */
+export interface MetricsHealthErrorGroup {
+  message: string;
+  count: number;
+  lastPath: string;
+  lastSeenAt: string | null;
+}
+
+/** p75 y número de muestras de un Core Web Vital. CLS en escala 0–1. */
+export interface MetricsVitalSummary {
+  p75: number;
+  samples: number;
+}
+
+/** Contrato de `GET /api/metrics/health-summary`. */
+export interface MetricsHealthSummary {
+  range: {
+    days: number;
+    from: string;
+    to: string;
+  };
+  errors: {
+    total: number;
+    unique: number;
+  };
+  topErrors: MetricsHealthErrorGroup[];
+  vitals: {
+    lcp: MetricsVitalSummary;
+    inp: MetricsVitalSummary;
+    cls: MetricsVitalSummary;
+  };
+  generatedAt: string;
+}
+
+/** Respuesta de `POST /api/metrics/purge`. */
+export interface MetricsPurgeResult {
+  deleted: number;
+}
+
 /** Error de dominio: el componente solo muestra `message`. */
 export class MetricsApiError extends Error {
   constructor(message: string, readonly status?: number) {
@@ -91,12 +130,29 @@ const REQUEST_TIMEOUT_MS = 15_000;
 @Injectable({ providedIn: 'root' })
 export class MetricsService {
   async getSummary(days: MetricsDays = 7): Promise<MetricsSummary> {
+    return this.request<MetricsSummary>(`/metrics/summary?days=${days}`, 'GET');
+  }
+
+  /** Errores JS y Core Web Vitals reales (p75) de los últimos días. */
+  async getHealthSummary(days: MetricsDays = 7): Promise<MetricsHealthSummary> {
+    return this.request<MetricsHealthSummary>(`/metrics/health-summary?days=${days}`, 'GET');
+  }
+
+  /**
+   * Borra eventos con más de 90 días de antigüedad.
+   * La retención la decide el backend; este método no recibe fecha.
+   */
+  async purge(): Promise<MetricsPurgeResult> {
+    return this.request<MetricsPurgeResult>('/metrics/purge', 'POST');
+  }
+
+  private async request<T>(path: string, method: 'GET' | 'POST'): Promise<T> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
     try {
-      const response = await fetch(`${ADMIN_API_BASE}/metrics/summary?days=${days}`, {
-        method: 'GET',
+      const response = await fetch(`${ADMIN_API_BASE}${path}`, {
+        method,
         headers: { Accept: 'application/json' },
         cache: 'no-store',
         signal: controller.signal,
@@ -111,7 +167,7 @@ export class MetricsService {
         );
       }
 
-      return (await response.json()) as MetricsSummary;
+      return (await response.json()) as T;
     } catch (error) {
       if (error instanceof MetricsApiError) throw error;
       if (isAbortError(error)) {

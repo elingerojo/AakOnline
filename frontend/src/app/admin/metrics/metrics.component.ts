@@ -11,8 +11,9 @@ import {
   type MetricsSummary,
 } from './metrics.service';
 import { SeoPanelComponent } from './seo-panel.component';
+import { HealthPanelComponent } from './health-panel.component';
 
-type MetricsTab = 'trafico' | 'seo';
+type MetricsTab = 'trafico' | 'seo' | 'salud';
 
 const TIMEZONE = 'America/Mexico_City';
 
@@ -44,7 +45,7 @@ interface FunnelStep {
 @Component({
   selector: 'app-metrics',
   standalone: true,
-  imports: [RouterLink, AdminNavComponent, SeoPanelComponent],
+  imports: [RouterLink, AdminNavComponent, SeoPanelComponent, HealthPanelComponent],
   template: `
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
       <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
@@ -68,6 +69,10 @@ interface FunnelStep {
                     [attr.aria-selected]="tab() === 'seo'" [class]="tabClass('seo')">
               SEO
             </button>
+            <button type="button" role="tab" (click)="selectTab('salud')"
+                    [attr.aria-selected]="tab() === 'salud'" [class]="tabClass('salud')">
+              Salud
+            </button>
           </div>
         </div>
       </header>
@@ -75,6 +80,8 @@ interface FunnelStep {
       <div class="max-w-7xl mx-auto px-4 py-6 space-y-6">
         @if (tab() === 'seo') {
           <app-seo-panel />
+        } @else if (tab() === 'salud') {
+          <app-health-panel />
         } @else {
         <!-- Filtro de periodo + nota de zona horaria -->
         <div class="flex flex-wrap items-center justify-between gap-3">
