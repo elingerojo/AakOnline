@@ -7,6 +7,7 @@ import {
   type SeoDailyRow,
   type SeoSnapshot,
 } from './seo.service';
+import { SeoOpportunitiesComponent } from './seo-opportunities.component';
 
 const SEARCH_CONSOLE_URL = 'https://search.google.com/search-console';
 
@@ -42,7 +43,7 @@ interface PageInfo {
 @Component({
   selector: 'app-seo-panel',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, SeoOpportunitiesComponent],
   template: `
     @if (loading()) {
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"
@@ -318,6 +319,9 @@ interface PageInfo {
           Propiedad <span class="font-mono">{{ s.siteUrl }}</span> · snapshot v{{ s.version }}
         </p>
       </section>
+
+      <!-- Oportunidades calculadas a partir del snapshot + catálogo local -->
+      <app-seo-opportunities [snapshot]="s" />
     }
   `,
 })

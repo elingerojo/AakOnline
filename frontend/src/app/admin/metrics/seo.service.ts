@@ -28,6 +28,12 @@ export interface SeoDeviceRow extends SeoMetric {
   device: string;
 }
 
+/** Fila página × consulta (snapshot v2 en adelante). */
+export interface SeoPageQueryRow extends SeoMetric {
+  page: string;
+  query: string;
+}
+
 /** Payload normalizado por `backend/src/services/search-console.service.ts`. */
 export interface SeoSnapshot {
   version: number;
@@ -43,6 +49,8 @@ export interface SeoSnapshot {
   queries: SeoQueryRow[];
   pages: SeoPageRow[];
   devices: SeoDeviceRow[];
+  /** Ausente en snapshots v1: el panel de oportunidades pide actualizar. */
+  pageQueries?: SeoPageQueryRow[];
   fetchedAt: string;
 }
 
