@@ -70,3 +70,34 @@ export const analyticsEvents = pgTable(
     index('analytics_events_path_idx').on(table.path),
   ]
 );
+
+/**
+ * Snapshot de Google Search Console (clics, impresiones, CTR, posición,
+ * consultas, páginas y dispositivos). El payload completo se cachea como
+ * jsonb para que el panel no consulte Google en cada carga.
+ */
+export const seoSnapshots = pgTable(
+  'seo_snapshots',
+  {
+    id: serial('id').primaryKey(),
+    siteUrl: text('site_url').notNull(),
+    days: integer('days').notNull(),
+    version: integer('version').notNull().default(1),
+    payload: jsonb('payload').notNull(),
+    fetchedAt: timestamp('fetched_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('seo_snapshots_site_days_fetched_at_idx').on(table.siteUrl, table.days, table.fetchedAt),
+  ]
+);
+
+/**
+ * Estado de la última sincronización con Search Console (fila única id = 1).
+ * `lastError` guarda solo el mensaje de Google: nunca llaves ni tokens.
+ */
+export const seoSyncState = pgTable('seo_sync_state', {
+  id: integer('id').primaryKey().default(1),
+  lastAttemptAt: timestamp('last_attempt_at', { withTimezone: true }),
+  lastSuccessAt: timestamp('last_success_at', { withTimezone: true }),
+  lastError: text('last_error'),
+});
