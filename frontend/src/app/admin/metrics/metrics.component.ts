@@ -136,10 +136,10 @@ interface FunnelStep {
             </div>
 
             @if (trend().length > 0) {
-              <div class="mt-4 flex items-end gap-[2px] h-40" role="img"
+              <div class="mt-4 flex items-end gap-px h-40 overflow-hidden" role="img"
                    [attr.aria-label]="'Visitas por día del ' + s.range.from + ' al ' + s.range.to">
                 @for (day of trend(); track day.date) {
-                  <div class="flex-1 min-w-[2px] h-full flex items-end">
+                  <div class="flex-1 min-w-0 h-full flex items-end">
                     <div class="w-full rounded-t bg-amber-500 dark:bg-amber-400"
                          [style.height.%]="barHeight(day.pageViews)"
                          [attr.title]="dayTitle(day)"></div>
